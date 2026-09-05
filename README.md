@@ -46,4 +46,4 @@ git submodule update --remote --merge .claude/skills/vulkano-skills
 
 ## License
 
-Internal use — not currently published for external consumption.
+[MIT](LICENSE) © VulkanoJS
