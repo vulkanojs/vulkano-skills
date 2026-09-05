@@ -1,6 +1,6 @@
 # Vulkano Skills
 
-Skills de Claude Code para proyectos construidos sobre el [Vulkano Framework](https://github.com/argordmel/vulkano-framework) (stack Express + Mongoose + Vue 3, backend/frontend). Pensado para consumirse como submódulo git, así todos los proyectos Vulkano comparten las mismas convenciones y las actualizaciones salen desde un solo lugar.
+Skills de Claude Code para proyectos construidos sobre el Vulkano Framework (stack Express + Mongoose + Vue 3, backend/frontend). Pensado para consumirse como submódulo git, así todos los proyectos Vulkano comparten las mismas convenciones y las actualizaciones salen desde un solo lugar.
 
 ## Qué hay acá
 
@@ -26,7 +26,7 @@ Cada carpeta bajo `skills/` es un skill de Claude Code autocontenido (`SKILL.md`
 Agregalo a un proyecto Vulkano bajo `.claude/skills/`:
 
 ```bash
-git submodule add https://github.com/argordmel/vulkano-skills.git .claude/skills/vulkano-skills
+git submodule add https://github.com/vulkanojs/vulkano-skills.git .claude/skills/vulkano-skills
 git submodule update --init --recursive
 ```
 
