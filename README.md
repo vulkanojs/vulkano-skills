@@ -4,7 +4,7 @@ Claude Code skills for projects built on the Vulkano Framework (Express + Mongoo
 
 ## What's here
 
-Each folder under `skills/` is a self-contained Claude Code skill (`SKILL.md` with frontmatter `name`/`description`). They cover the framework's backend and frontend conventions:
+Each folder at the repo root is a self-contained Claude Code skill (`SKILL.md` with frontmatter `name`/`description`). They cover the framework's backend and frontend conventions:
 
 - `vulkano-backend-auth` — login/logout/session-check auth (dedicated Auth/User model, AuthController, JWT via httpOnly cookie).
 - `vulkano-backend-controller` — route wiring, HTTP-verb-to-method-key convention, `res.vsr`/`res.render`, socket events.
@@ -30,7 +30,7 @@ git submodule add https://github.com/vulkanojs/vulkano-skills.git .claude/skills
 git submodule update --init --recursive
 ```
 
-Claude Code discovers skills recursively under `.claude/skills/`, so nesting them one level deeper inside `vulkano-skills/skills/` doesn't break discovery.
+Claude Code discovers skills recursively under `.claude/skills/`, so nesting them one level deeper inside `vulkano-skills/` doesn't break discovery.
 
 To pull updates into a project that already has the submodule:
 
@@ -40,7 +40,7 @@ git submodule update --remote --merge .claude/skills/vulkano-skills
 
 ## Adding or editing a skill
 
-1. Edit the relevant `skills/<name>/SKILL.md` here, in this repo — not inside a project's submodule checkout (changes there are local to that checkout until pushed here and pulled back).
+1. Edit the relevant `<name>/SKILL.md` here, in this repo — not inside a project's submodule checkout (changes there are local to that checkout until pushed here and pulled back).
 2. Commit and push here.
 3. In each consuming project, run `git submodule update --remote --merge` and commit the updated submodule pointer.
 
