@@ -25,6 +25,7 @@ Not for component file layout — see vulkano-frontend-component. Not for a11y a
 - Every required field's label gets a red asterisk: reuse a shared `.field-required` (or equivalent BEM element) with `color: var(--color-danger-500)` — never hardcode red per view. **Neither the class nor the `--color-danger-500` token exists in a fresh scaffold** (checked: no `frontend/**/*.scss` defines it) — the first form in a project defines both once, in a shared partial (e.g. `frontend/<entrypoint>?/scss/_tokens.scss`, imported from `style.scss`), and every form after that reuses them.
 - Error message rendered inline below the input: `<span class="*__field-error">{{ fieldErrors.email }}</span>`.
 - Invalid input gets a `*__input--invalid` class for the red border.
+- Required inputs keep the native `required` attribute even though `novalidate` suppresses its browser UI — not redundant with `V.required(...)` in `formRules`: it stays for the accessibility tree, gives a quick visual signal in devtools without opening `formRules`, and a mismatch between the two (required in markup but not in rules, or vice versa) is a bug worth catching. See vulkano-frontend-a11y § Forms.
 - No `frontend/<entrypoint>?/views/Login/` exists in a fresh scaffold — it's not a file to go open and copy. Follow the `useFormValidator` + `formRules` + `fieldErrors` + `<span class="*__field-error">` + `*__input--invalid` shape from the Skeleton below instead; once a project's first login/form view exists, treat _that_ as the local reference for the next one.
 - `composables/useFormValidator.js` and `utils/validators.js` don't exist in a fresh scaffold either — the first form in a project creates them once (shared, not per-view), every form after reuses them.
 
@@ -117,6 +118,7 @@ export default {
   <input
     id="email"
     type="email"
+    required
     v-model="form.email"
     :class="{ 'login__input--invalid': fieldErrors.email }"
     :aria-invalid="!!fieldErrors.email"

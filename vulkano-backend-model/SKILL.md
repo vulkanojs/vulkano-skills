@@ -27,6 +27,7 @@ Not for controllers/routes — see vulkano-backend-controller skill. Not for Vue
 - Decide the filename: singular PascalCase (`Order.js` → `global.Order`, collection `order`, never pluralized).
 - Decide scaffold (zero-code CRUD) vs custom CRUD methods.
 - Don't introduce a repository/data-access abstraction layer or a parallel persistence pattern — the model IS the persistence layer here (Mongoose + these CRUD methods), per this project's KISS/no-premature-abstraction rule.
+- **`getAll`/`create`/`update`/`delete`/`get<ModelName>` looking similar across models is not a DRY violation — don't extract a shared helper/factory for them.** Each model's `getAll` differs in real ways (`searchBy` fields, `defaultProps.filter`, ad-hoc query filters, sort default) even when the boilerplate around it matches; a shared helper either can't express those differences or grows parameters/branches until it's harder to read than the plain per-model version it replaced. The truly-shared plumbing (`_buildPopulate`, `_parsePopulateEntries`, `_getSanitizedPopulate`, timestamps) is already mixed in by `database/scaffold.js` — nothing per-model to extract there. If a model genuinely needs zero custom logic, use the scaffold shortcut (`attributes` + `fillable`, see below) instead of writing a new abstraction; that's the project's one sanctioned way to avoid repeating CRUD code.
 
 ## File & naming
 

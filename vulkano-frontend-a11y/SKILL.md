@@ -38,7 +38,7 @@ Not for the form's validation-error JS pattern itself — see vulkano-frontend-f
 
 - Every input has `<label for="...">` matched by id — placeholder is never a label substitute.
 - Invalid fields get `aria-invalid="true"` + `aria-describedby` pointing at the error span's id (that span needs an `id` for this to work) — matches the `fieldErrors` pattern in vulkano-frontend-form.
-- Required fields keep the native `required` attribute even though `novalidate` suppresses its browser UI (per vulkano-frontend-form) — it stays for the accessibility tree.
+- Required fields keep the native `required` attribute even though `novalidate` suppresses its browser UI (per vulkano-frontend-form). Not redundant with `formRules`/`V.required(...)` — it stays for the accessibility tree, gives a quick visual signal when inspecting the DOM (devtools shows it directly on the element, no need to open `formRules` to know), and doubles as a check that a field marked required in JS validation is actually marked required in markup (and vice versa) — a mismatch between the two is a bug worth catching.
 
 ```html
 <label for="email">Email <span class="field-required">*</span></label>
