@@ -1,13 +1,15 @@
 ---
 name: vulkano-frontend-form
-description: Use when building or editing a form in this Vulkano framework project's frontend/ — required-field asterisks, JS-only validation (no native HTML5 validation UI), fieldErrors pattern, input types, and date-picker choice.
+description: Use when building or editing a form in this Vulkano framework project's frontend/ — required-field asterisks, JS-only rules-based validation via the shared useFormValidator composable, fieldErrors pattern, input types, and date-picker choice.
 ---
 
 # Frontend Form
 
 ## Overview
 
-Forms never rely on native browser validation UI (`required`/`:invalid` styling, error bubbles) — it can't be styled consistently and breaks the design system. Validation is always hand-rolled in JS, error state kept in component data, message rendered inline.
+Forms never rely on native browser validation UI (`required`/`:invalid` styling, error bubbles) — it can't be styled consistently and breaks the design system. Validation is always hand-rolled in JS: a rules object per field, checked by the shared `useFormValidator` composable, error state exposed as `fieldErrors`, message rendered inline.
+
+`useFormValidator` is a project-owned, dependency-free composable — not a third-party validation library. If a validation library is added to the project later, swap the composable's internals only; every form's `formRules`/`validate(...)` usage stays unchanged.
 
 ## When to use
 
@@ -17,41 +19,91 @@ Not for component file layout — see vulkano-frontend-component. Not for a11y a
 
 ## Required-field pattern
 
-- `<form novalidate>` — suppresses native validation UI, JS still handles the flow.
-- `fieldErrors` reactive object in component state: `{ email: '', password: '' }`.
+- Validation runs through `const { fieldErrors, validate } = useFormValidator(form, formRules)` (see Skeleton) — never native `required`/`:invalid` UI.
+- `formRules` is a plain object: `{ email: [V.required('...'), V.email('...')] }` — each entry an array of validator functions from `frontend/<entrypoint>?/utils/validators.js` (`V.required(message)`, `V.email(message)`, ...), checked in order, first failing rule wins.
+- `fieldErrors` is the reactive object returned by `useFormValidator` — never re-declared locally.
 - Every required field's label gets a red asterisk: reuse a shared `.field-required` (or equivalent BEM element) with `color: var(--color-danger-500)` — never hardcode red per view. **Neither the class nor the `--color-danger-500` token exists in a fresh scaffold** (checked: no `frontend/**/*.scss` defines it) — the first form in a project defines both once, in a shared partial (e.g. `frontend/<entrypoint>?/scss/_tokens.scss`, imported from `style.scss`), and every form after that reuses them.
 - Error message rendered inline below the input: `<span class="*__field-error">{{ fieldErrors.email }}</span>`.
 - Invalid input gets a `*__input--invalid` class for the red border.
-- No `frontend/<entrypoint>?/views/Login/` exists in a fresh scaffold — it's not a file to go open and copy. Follow the `novalidate` + `fieldErrors` + `<span class="*__field-error">` + `*__input--invalid` shape from the Skeleton below instead; once a project's first login/form view exists, treat _that_ as the local reference for the next one.
+- No `frontend/<entrypoint>?/views/Login/` exists in a fresh scaffold — it's not a file to go open and copy. Follow the `useFormValidator` + `formRules` + `fieldErrors` + `<span class="*__field-error">` + `*__input--invalid` shape from the Skeleton below instead; once a project's first login/form view exists, treat _that_ as the local reference for the next one.
+- `composables/useFormValidator.js` and `utils/validators.js` don't exist in a fresh scaffold either — the first form in a project creates them once (shared, not per-view), every form after reuses them.
 
 ## Skeleton
 
 ```js
+// frontend/<entrypoint>?/utils/validators.js
+export const V = {
+  required: (message) => (value) => (value === '' || value == null ? message : null),
+  email: (message) => (value) => (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? null : message)
+};
+```
+
+```js
+// frontend/<entrypoint>?/composables/useFormValidator.js
+import { ref } from 'vue';
+
+export function useFormValidator(model, rules) {
+  const fieldErrors = ref({});
+
+  async function validate(callback) {
+    const errors = {};
+
+    for (const field in rules) {
+      for (const rule of rules[field]) {
+        const message = rule(model[field]);
+        if (message) {
+          errors[field] = message;
+          break;
+        }
+      }
+    }
+
+    fieldErrors.value = errors;
+    const isValid = Object.keys(errors).length === 0;
+    callback(isValid);
+    return isValid;
+  }
+
+  return { fieldErrors, validate };
+}
+```
+
+```js
 // Index.js
-import { ref, getCurrentInstance } from 'vue';
+import { reactive, ref, getCurrentInstance } from 'vue';
+import { V } from '@website/utils/validators.js';
+import { useFormValidator } from '@website/composables/useFormValidator.js';
 
 export default {
   setup() {
     const { $api } = getCurrentInstance().proxy || {};
-    const form = ref({ email: '', password: '' });
-    const fieldErrors = ref({ email: '', password: '' });
+    const form = reactive({ email: '', password: '' });
     const isSubmitting = ref(false);
 
-    function validate() {
-      fieldErrors.value = { email: '', password: '' };
-      if (!form.value.email) fieldErrors.value.email = 'Email is required';
-      if (!form.value.password) fieldErrors.value.password = 'Password is required';
-      return !Object.values(fieldErrors.value).some(Boolean);
-    }
+    const formRules = {
+      email: [V.required('Email is required'), V.email('Enter a valid email address')],
+      password: [V.required('Password is required')]
+    };
 
-    async function submit() {
-      if (!validate()) return;
+    const { fieldErrors, validate } = useFormValidator(form, formRules);
+
+    async function save() {
       isSubmitting.value = true;
       try {
-        await $api.post('/auth/login', form.value);
+        await $api.post('/auth/login', form);
       } finally {
         isSubmitting.value = false;
       }
+    }
+
+    async function submit() {
+      await validate((isValid) => {
+        if (isValid) {
+          save();
+          return true;
+        }
+        return false;
+      });
     }
 
     return { form, fieldErrors, isSubmitting, submit };
@@ -60,7 +112,7 @@ export default {
 ```
 
 ```html
-<form novalidate @submit.prevent="submit">
+<form novalidate @submit.prevent>
   <label class="login__label" for="email"> Email <span class="field-required">*</span> </label>
   <input
     id="email"
@@ -74,7 +126,12 @@ export default {
     >{{ fieldErrors.email }}</span
   >
 
-  <button type="submit" :disabled="isSubmitting" :class="{ 'is-loading': isSubmitting }">
+  <button
+    type="submit"
+    :disabled="isSubmitting"
+    :class="{ 'is-loading': isSubmitting }"
+    @click="submit"
+  >
     Submit
   </button>
 </form>
@@ -84,9 +141,15 @@ export default {
 
 Setting the correct `type` (`email`, `number`, `date`, `range`, `tel`, ...) is about semantics/mobile keyboard/a11y, not the validation-UI point above — it stays required even with `novalidate`.
 
+## UI component library — check before reaching for native HTML5
+
+Before building any input (date, select, checkbox, combobox, ...), check `frontend/<entrypoint>?/components/ui/` or `frontend/<entrypoint>?/views/ui/` for an existing installed component that fits (shadcn-vue, Element Plus, or whatever the project already has — see root CLAUDE.md § UI components). If one exists, use it instead of the raw HTML5 element.
+
+If nothing fits, fall back to the plain HTML5 element and say so explicitly in the response — e.g. "No encontré componente en components/ui/ para date picker, usé `<input type=\"date\">` nativo." Never fall back silently.
+
 ## Date fields
 
-`type="date"`'s native picker can't be restyled and varies by browser/OS. Acceptable for low-stakes internal forms. Views already carrying the redesign should use a shadcn-vue date-picker (`pnpm dlx shadcn-vue add calendar` + `popover`) instead — shadcn-vue is not installed yet, call out the install explicitly if adding it.
+`type="date"`'s native picker can't be restyled and varies by browser/OS. Check `components/ui/` first per the rule above (a shadcn-vue `calendar`+`popover` date-picker or Element Plus `<el-date-picker>` if already installed). If nothing exists yet: `type="date"` is acceptable for low-stakes internal forms and forms not yet carrying the redesign; a view already carrying the redesign should install a date-picker (`pnpm dlx shadcn-vue add calendar` + `popover`, or Element Plus's date picker) instead — call out the install explicitly.
 
 ## Microinteractions (required on every submit)
 
