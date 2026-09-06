@@ -97,7 +97,14 @@ Never `src="@website/..."`/`src="@admin/..."`, a relative `import`, or any other
 
 ## UI reference page
 
-Every entrypoint keeps a dev-only UI reference view — `frontend/<entrypoint>?/views/ui/Index.vue`, route `/ui` — listing every reusable component (Datepicker, Textarea, Select, Modal, Button, etc.) with a live usage example and its props/slots. This page is the reuse source of truth: check it before writing a new component or raw form field, so nothing gets reinvented that already exists.
+Every entrypoint keeps a dev-only UI reference view — `frontend/<entrypoint>?/views/UI/Index.vue`, route `/ui` — listing every reusable component with a live usage example and its props/slots. This page is the reuse source of truth: check it before writing a new component or raw form field, so nothing gets reinvented that already exists.
+
+Two kinds of components live behind it, both get an entry:
+
+- **Custom components** (Datepicker, Textarea, Select, Modal, Button, etc.) — code lives in `components/<Name>/`.
+- **Vendored UI-library components** (shadcn-vue, Element Plus — see root CLAUDE.md § UI components) — code lives in `components/ui/`.
+
+`components/` (and `components/ui/`) hold the code; `views/UI/Index.vue` holds nothing but examples — it never re-implements a component, only imports and demonstrates it.
 
 - Not built yet in a fresh scaffold — the first reusable component in an entrypoint creates the page; every reusable component after adds itself to it.
 - Guard the route (dev/local only, or behind admin auth) — it's a build tool, never a public/indexed page. No SEO, no analytics.

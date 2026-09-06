@@ -143,13 +143,13 @@ Setting the correct `type` (`email`, `number`, `date`, `range`, `tel`, ...) is a
 
 ## UI component library — check before reaching for native HTML5
 
-Before building any input (date, select, checkbox, combobox, ...), check `frontend/<entrypoint>?/components/ui/` or `frontend/<entrypoint>?/views/ui/` for an existing installed component that fits (shadcn-vue, Element Plus, or whatever the project already has — see root CLAUDE.md § UI components). If one exists, use it instead of the raw HTML5 element.
+Before building any input (date, select, checkbox, combobox, ...), check `frontend/<entrypoint>?/views/UI/Index.vue` — the UI reference page (see vulkano-frontend-component § UI reference page) — for an existing component that fits, whether custom or a vendored shadcn-vue/Element Plus one. If one exists, use it instead of the raw HTML5 element, copying its documented usage snippet verbatim.
 
-If nothing fits, fall back to the plain HTML5 element and say so explicitly in the response — e.g. "No encontré componente en components/ui/ para date picker, usé `<input type=\"date\">` nativo." Never fall back silently.
+If the reference page doesn't exist yet, or nothing in it fits, fall back to the plain HTML5 element and say so explicitly in the response — e.g. "No encontré componente en views/UI/Index.vue para date picker, usé `<input type=\"date\">` nativo." Never fall back silently.
 
 ## Date fields
 
-`type="date"`'s native picker can't be restyled and varies by browser/OS. Check `components/ui/` first per the rule above (a shadcn-vue `calendar`+`popover` date-picker or Element Plus `<el-date-picker>` if already installed). If nothing exists yet: `type="date"` is acceptable for low-stakes internal forms and forms not yet carrying the redesign; a view already carrying the redesign should install a date-picker (`pnpm dlx shadcn-vue add calendar` + `popover`, or Element Plus's date picker) instead — call out the install explicitly.
+`type="date"`'s native picker can't be restyled and varies by browser/OS. Check the UI reference page first per the rule above (a shadcn-vue `calendar`+`popover` date-picker or Element Plus `<el-date-picker>` if already installed and documented there). If nothing exists yet: `type="date"` is acceptable for low-stakes internal forms and forms not yet carrying the redesign; a view already carrying the redesign should install a date-picker (`pnpm dlx shadcn-vue add calendar` + `popover`, or Element Plus's date picker) instead — call out the install explicitly, and add it to the UI reference page.
 
 ## Microinteractions (required on every submit)
 
@@ -160,6 +160,7 @@ If nothing fits, fall back to the plain HTML5 element and say so explicitly in t
 
 - Track both outcomes (`{section}_success` / `{section}_error`) per vulkano-frontend-analytics, unless the user opted out for this area.
 - Confirm a11y requirements (labels, `aria-invalid`, `aria-describedby`) per vulkano-frontend-a11y.
+- New/changed `validators.js` rule or `useFormValidator` behavior → test at `test/frontend/<entrypoint>?/utils/validators.test.js` / `.../composables/useFormValidator.test.js` per vulkano-testing.
 - Visually verify in a browser: submit with empty fields, invalid values, and valid values.
 - Run `vp check` and `vp test`.
 

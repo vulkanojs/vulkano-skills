@@ -11,7 +11,7 @@ Runner is Vitest via `vp test`. Every new/changed controller, model, service, or
 
 ## When to use
 
-Any task that creates/edits `app/controllers/`, `app/models/`, `app/services/`, `app/config/middlewares/`, `app/config/sockets/`, or `frontend/<entrypoint>?/store/` code — after writing the code, write/update its test before considering the task done.
+Any task that creates/edits `app/controllers/`, `app/models/`, `app/services/`, `app/config/middlewares/`, `app/config/sockets/`, `frontend/<entrypoint>?/store/`, or `frontend/<entrypoint>?/composables/`/`utils/` code — after writing the code, write/update its test before considering the task done.
 
 ## Before running anything — `TEST_MONGO_URI`
 
@@ -33,6 +33,8 @@ test/
   <script>.test.js            standalone scripts/*.js not under app/
   frontend/
     store/<name>.test.js       # only while frontend/ is flat (1 entrypoint)
+    composables/<name>.test.js
+    utils/<name>.test.js
     integration/<Flow>.test.js
 ```
 
@@ -43,9 +45,13 @@ test/
   frontend/
     website/
       store/<name>.test.js
+      composables/<name>.test.js
+      utils/<name>.test.js
       integration/<Flow>.test.js
     admin/
       store/<name>.test.js
+      composables/<name>.test.js
+      utils/<name>.test.js
       integration/<Flow>.test.js
 ```
 
@@ -62,6 +68,7 @@ Never `test/admin/` as a root-level sibling — that only made sense before the 
 | Integration     | `test/app/integration/*.test.js`              | Full business flow across models (signup → login → protected route); factory helpers from `test/helpers/`; clear every touched collection in dependency order                                                               |
 | Script          | `test/<script>.test.js`                       | Plain unit tests, no boot/DB — still gated by `TEST_MONGO_URI` (shared `setupFiles`)                                                                                                                                        |
 | Frontend store  | `test/frontend/<entrypoint>?/store/*.test.js` | No app boot/DB; `createPinia()` + `setActivePinia()` in `beforeEach`; inject a mock `$api` — never hit real network; shim browser globals or mark `// @vitest-environment jsdom` if a real DOM is needed                    |
+| Frontend composable/util | `test/frontend/<entrypoint>?/{composables,utils}/*.test.js` | Plain unit test, no app boot/DB, no Pinia, no `jsdom` unless the composable touches the DOM; call the exported function(s) directly with fixture input, assert the returned value (e.g. `V.required('msg')('')` → `'msg'`; `useFormValidator(model, rules).validate(cb)` → `cb` called with `isValid`, `fieldErrors` populated) |
 
 Mock outbound external calls (`ApiClient`, third-party APIs) with `vi.spyOn(...).mockResolvedValue(...)`, restored in `afterEach` — never hit a real third-party endpoint from a test.
 
