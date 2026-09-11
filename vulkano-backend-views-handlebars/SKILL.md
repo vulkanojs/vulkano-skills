@@ -173,7 +173,7 @@ Hash-argument syntax via triple-stash (helpers are wrapped so `{{{helper key=val
 <!-- before </body> -->
 ```
 
-`entry` must match a key in `vite.config.mjs`'s `build.rollupOptions.input` — use the entry name for the area this view belongs to (front vs CMS, see ARCHITECTURE.md § Multiple entry points).
+`entry` must match a key in `vite.entries.mjs`'s `entries` map — use the entry name for the area this view belongs to (front vs CMS, see ARCHITECTURE.md § Multiple entry points).
 
 ## After writing
 
