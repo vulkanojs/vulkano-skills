@@ -1,6 +1,6 @@
 ---
 name: vulkano-frontend-component
-description: Use when creating, editing, or reviewing a Vue component or view in this Vulkano framework project's frontend/ folder — .vue/.js/.scss file splitting, Composition API, views/ vs components/ placement, route↔view naming, Pinia store per concern, BEM styling, and CSS Grid layout.
+description: Use when creating, editing, or reviewing a Vue component or view in this Vulkano framework project's frontend/ folder — .vue/.js/.scss file splitting, Composition API, views/ vs components/ placement, route↔view naming, Pinia store per concern, BEM styling, CSS Grid layout, and which UI kit (shadcn-vue/Element Plus) owns inputs, dialogs, and confirm/alert. MANDATORY before writing any delete/confirm action or `window.confirm`/`window.alert`/`window.prompt` call, even outside a form.
 ---
 
 # Frontend Component
@@ -107,6 +107,20 @@ Two kinds of components live behind it, both get an entry:
 `components/` (and `components/ui/`) hold the code; `views/UI/Index.vue` holds nothing but examples — it never re-implements a component, only imports and demonstrates it.
 
 - Not built yet in a fresh scaffold — the first reusable component in an entrypoint creates the page; every reusable component after adds itself to it.
+
+## Installed UI library is not optional — check `package.json` before native HTML
+
+**Check for `components.json` (repo root) or `package.json`'s `element-plus` first, not just the reference page above.** `components.json` is shadcn-vue's own canonical marker — always created by `shadcn-vue init` regardless of which underlying primitives library it pulled in that version (`reka-ui` today, `radix-vue` in older setups, could rename again) — don't grep for a specific peer-dep name, it drifts. Either marker present means that library is this project's chosen UI kit — every input, button, dialog, and confirm/alert MUST go through it, not raw HTML5 or a native browser dialog. An empty/missing entry in `views/UI/Index.vue` is not license to fall back — it means the component hasn't been added to this project yet:
+
+1. Check `views/UI/Index.vue` for an existing usage example — copy it verbatim if found.
+2. If the kit is installed but this component isn't in the reference page yet: add it now (`pnpm dlx shadcn-vue add <component>`, or use the already-imported Element Plus tag), then add its usage example to the reference page. Expected first-use cost, not an edge case to route around.
+3. Only fall back to plain HTML5/native browser UI when neither `components.json` nor `element-plus` is present — say so explicitly in the response (e.g. "No hay shadcn-vue/Element Plus instalado, usé `<input type=\"date\">` nativo"). Never fall back silently, and never fall back just because the reference page happened to be empty.
+
+**`window.confirm`/`window.alert`/`window.prompt` are always off-limits** for user-facing confirmation or messaging (delete confirmations, save feedback, etc.) — native dialogs block the main thread and can't be styled, same reason native form-validation UI is banned (see vulkano-frontend-form):
+
+- shadcn-vue installed → `AlertDialog` (`pnpm dlx shadcn-vue add alert-dialog` if not yet added) for confirmations, `Sonner`/`Toast` for messages.
+- Element Plus installed → `ElMessageBox.confirm(...)` for confirmations, `ElMessage`/`ElNotification` for messages.
+- Neither installed → build one minimal reusable confirm-modal/toast component (shared, not per-view) instead of reaching for `window.confirm`.
 - Guard the route (dev/local only, or behind admin auth) — it's a build tool, never a public/indexed page. No SEO, no analytics.
 - One section per component: name, short description, a rendered live instance, and the exact `<template>` snippet to copy-paste (props included) — mirror that snippet verbatim when reusing, don't improvise a variant.
 - Keep entries flat, one per component — no nested taxonomy needed for this.

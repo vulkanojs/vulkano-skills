@@ -11,7 +11,7 @@ No Vue SSR/prerendering in this framework — the SPA (`frontend/`) is never a S
 
 ## When to use
 
-Adding/editing a public backend view (landing, blog post, product/listing page). First confirm the area is SEO-on per the table in root `CLAUDE.md`/AGENTS.md § Project requirements — a CMS/admin area is never a SEO target even if it's server-rendered.
+Adding/editing a public backend view (landing, blog post, product/listing page). First confirm the area is SEO-on per the table in root `PROJECT.md` § Project requirements (included into `AGENTS.md`/`CLAUDE.md` via `@PROJECT.md`) — a CMS/admin area is never a SEO target even if it's server-rendered.
 
 Not for the Vue SPA (never SEO-covered — build ranking pages as backend views instead). Not for `alt`/heading-order minimums — those are vulkano-frontend-a11y's, and already double as SEO signals here.
 

@@ -88,11 +88,11 @@ frontend/<name>/
 
 ## SEO / Analytics / Accessibility per area
 
-Every new entrypoint is a new "area" per AGENTS.md § Project requirements. Before considering the entrypoint done:
+Every new entrypoint is a new "area" per PROJECT.md § Project requirements. Before considering the entrypoint done:
 
 1. Ask the user which kind of area this is (landing / landing+form / website / blog, embeddable widget, or CMS/admin panel) if not already stated.
-2. Map it to SEO/Analytics/Accessibility on/off per the existing rule in AGENTS.md.
-3. Add a row for it to the table in AGENTS.md § Project requirements, and show the user the result.
+2. Map it to SEO/Analytics/Accessibility on/off per the existing rule in PROJECT.md.
+3. Add a row for it to the table in PROJECT.md § Project requirements, and show the user the result.
 
 ## After writing
 
@@ -103,4 +103,4 @@ Every new entrypoint is a new "area" per AGENTS.md § Project requirements. Befo
 
 ## Reference
 
-reference/ARCHITECTURE.md § Multiple entry points, vulkano-frontend-router § Multiple entry points / Backend catch-all, vulkano-backend-controller, vulkano-seo, AGENTS.md § Project requirements.
+reference/ARCHITECTURE.md § Multiple entry points, vulkano-frontend-router § Multiple entry points / Backend catch-all, vulkano-backend-controller, vulkano-seo, PROJECT.md § Project requirements.

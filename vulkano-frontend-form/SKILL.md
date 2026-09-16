@@ -1,6 +1,6 @@
 ---
 name: vulkano-frontend-form
-description: Use when building or editing a form in this Vulkano framework project's frontend/ — required-field asterisks, JS-only rules-based validation via the shared useFormValidator composable, fieldErrors pattern, input types, and date-picker choice.
+description: MANDATORY — load BEFORE writing or editing ANY `<form>` in this Vulkano project's frontend/, no exceptions, even a "quick" one-field form. Trigger words — form, `<form>`, input, field, validation, required field, contact form, login form, signup, submit button, CRUD create/edit view. Covers required-field asterisks, JS-only rules-based validation via the shared useFormValidator composable, fieldErrors pattern, input types, and date-picker choice. Do not write form markup/logic from memory of a past form — conventions in this skill may have moved.
 ---
 
 # Frontend Form
@@ -143,11 +143,9 @@ export default {
 
 Setting the correct `type` (`email`, `number`, `date`, `range`, `tel`, ...) is about semantics/mobile keyboard/a11y, not the validation-UI point above — it stays required even with `novalidate`.
 
-## UI component library — check before reaching for native HTML5
+## UI component library and confirm/alert dialogs
 
-Before building any input (date, select, checkbox, combobox, ...), check `frontend/<entrypoint>?/views/UI/Index.vue` — the UI reference page (see vulkano-frontend-component § UI reference page) — for an existing component that fits, whether custom or a vendored shadcn-vue/Element Plus one. If one exists, use it instead of the raw HTML5 element, copying its documented usage snippet verbatim.
-
-If the reference page doesn't exist yet, or nothing in it fits, fall back to the plain HTML5 element and say so explicitly in the response — e.g. "No encontré componente en views/UI/Index.vue para date picker, usé `<input type=\"date\">` nativo." Never fall back silently.
+Canonical rule lives in vulkano-frontend-component § "Installed UI library is not optional" — load it too. Short version: check `package.json` for shadcn-vue/Element Plus before any raw `<input>`/`<select>`/etc; if a kit is installed, use it (adding a missing component to the project is expected, not a reason to fall back to HTML5); and never `window.confirm`/`window.alert`/`window.prompt` for confirmations/messages — use the kit's `AlertDialog`/`ElMessageBox` (or a shared custom modal if no kit is installed).
 
 ## Date fields
 
@@ -168,4 +166,4 @@ If the reference page doesn't exist yet, or nothing in it fits, fall back to the
 
 ## Reference
 
-The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>?/views/Login/` to copy from in a fresh scaffold), AGENTS.md § Form fields, reference/ACCESSIBILITY.md § Forms.
+The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>?/views/Login/` to copy from in a fresh scaffold), reference/ACCESSIBILITY.md § Forms. AGENTS.md § Form fields only points here now — this skill is the source of truth, not a summary of it.
