@@ -16,6 +16,7 @@ Any new/changed interactive element in `frontend/` — links, buttons, forms, do
 ## Universal id requirement
 
 Every tracked element gets a unique `id="{section}-{action}"` (hyphenated) — no exceptions, regardless of provider:
+
 - `<a>` / nav links: `id="hero-cta"`, `id="footer-privacy"`
 - `<button>`: `id="checkout-submit"`
 - `<form>`: `id="contact-form"`
