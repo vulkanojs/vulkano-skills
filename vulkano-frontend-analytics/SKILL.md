@@ -7,18 +7,28 @@ description: Use when adding or reviewing tracking on a frontend form, button, d
 
 ## Overview
 
-Every project tracks analytics unless the user explicitly opted out for that area (check the SEO/Analytics/Accessibility table in the root CLAUDE.md first — a CMS/admin area is usually Analytics off). If a task touches a form, button, download, video, or page and no tracking exists yet, ask which provider(s) before considering the task done — don't skip silently.
+Every project tracks analytics unless the user explicitly opted out for that area (check the SEO/Analytics/Accessibility table in the root CLAUDE.md first — a CMS/admin area is usually Analytics off). Tracking is not opt-in per element: **every** interactive element gets tracked — `<a>`, `<button>`, `<form>`, PDF/file download links, video players, anything clickable. If a task touches one of these and no tracking exists yet, wire it — don't skip silently, and don't wait to be asked.
 
 ## When to use
 
-Any new/changed user interaction in `frontend/` — form submit, button click, file download, video play, page view. Not for backend event logging. Not for SEO — see reference/SEO.md.
+Any new/changed interactive element in `frontend/` — links, buttons, forms, downloads, video, page view. Not for backend event logging. Not for SEO — see reference/SEO.md.
+
+## Universal id requirement
+
+Every tracked element gets a unique `id="{section}-{action}"` (hyphenated) — no exceptions, regardless of provider:
+- `<a>` / nav links: `id="hero-cta"`, `id="footer-privacy"`
+- `<button>`: `id="checkout-submit"`
+- `<form>`: `id="contact-form"`
+- PDF/file download links: `id="resources-download"`
+- video controls: `id="hero-play"`
+
+This id is what GTM triggers match on, and it doubles as the anchor for the event name (see below) and for the Network-tab/DebugView verification step. Missing or non-unique id on a tracked element is a bug, not a style nit.
 
 ## Provider wiring
 
 - **Vue pages**: [`vue-gtag`](https://github.com/MatteoGabriele/vue-gtag) for GA. Not installed by default — `pnpm add vue-gtag` and call the install out explicitly in the diff.
 - **Non-Vue/server-rendered pages**: standard `gtag.js` snippet in the page `<head>`, no wrapper library.
 - Other providers (FB Pixel, Adobe, GTM) — use their own official snippet/SDK directly, no custom wrapper.
-- **GTM**: every tracked element needs a unique `id` — GTM triggers match by `id`.
 - Provider IDs come from an env var (`VITE_GA_ID`) or hardcoded, whichever the user specifies for that project — neither is more correct.
 
 ## Event naming
@@ -58,6 +68,7 @@ New projects default to `SEO_NOINDEX=true` (private/noindex). Tracking still fir
 
 - Confirm the area's Analytics column (root CLAUDE.md table) isn't "off" before adding anything.
 - Surface the custom-dimension and private-mode warnings when they apply — don't skip silently.
+- Verify the event actually fires: check the browser Network tab (request to `google-analytics.com`/`analytics.google.com`) or GA4 DebugView, for both outcomes on a form (`{section}_success` and `{section}_error`). Wiring the `event(...)` call is not enough — confirm the request leaves the browser with the right name/params.
 - Run `vp check` and `vp test`.
 
 ## Reference
