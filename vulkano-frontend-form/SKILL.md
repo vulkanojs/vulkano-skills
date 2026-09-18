@@ -168,4 +168,4 @@ Canonical rule lives in vulkano-frontend-component § "Installed UI library is n
 
 ## Reference
 
-The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>/views/Login/` to copy from in a fresh scaffold), references/AGENTS/ACCESSIBILITY.md § Forms. AGENTS.md § Form fields only points here now — this skill is the source of truth, not a summary of it.
+The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>/views/Login/` to copy from in a fresh scaffold), vulkano-frontend-a11y § Forms for the a11y wiring side. `references/AGENTS/ACCESSIBILITY.md` only points here now — this skill is the source of truth, not a summary of it.

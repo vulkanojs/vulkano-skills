@@ -93,7 +93,7 @@ Text sits next to the box either way, so wrapping instead of `for`/`id` skips a 
 
 ## Color and contrast
 
-- Reuse existing design tokens (the project's own danger/error/etc. color variables, per vulkano-frontend-form § required-field asterisk) — don't introduce colors under 4.5:1 text contrast (3:1 for large text/UI components).
+- Reuse existing design tokens (the project's own danger/error/etc. color variables, per vulkano-frontend-form § Required-field pattern) — don't introduce colors under 4.5:1 text contrast (3:1 for large text/UI components).
 - Never convey state (error/required/active) through color alone — pair with text, icon, or `aria-*`.
 
 ## Structure

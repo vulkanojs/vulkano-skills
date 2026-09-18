@@ -92,7 +92,7 @@ Never `src="@website/..."`/`src="@admin/..."`, a relative `import`, or any other
 <img src="/img/logo.png" alt="Vulkano logo" />
 ```
 
-`/img/`, `/fonts/`, `/files/` — never `public/` in the path, never through an entrypoint alias (`@website`, `@admin`). See AGENTS.md § Frontend assets for namespacing and `.webp` optimization.
+`/img/`, `/fonts/`, `/files/` — never `public/` in the path, never through an entrypoint alias (`@website`, `@admin`). See `references/AGENTS/ASSETS.md` for namespacing and `.webp` optimization.
 
 ## UI reference page
 
@@ -141,7 +141,7 @@ CSS Grid only (never Flexbox), the responsive grid system (`.row`/`.column`), an
 - New reusable component → add its section to the UI reference page (`frontend/<entrypoint>/views/UI/Index.vue`).
 - New/edited store → see vulkano-frontend-store § After writing.
 - Check analytics (vulkano-frontend-analytics) and accessibility (vulkano-frontend-a11y) requirements for the area before considering done.
-- Visually verify in a browser per AGENTS.md § Visual verification.
+- Visually verify in a browser per `references/AGENTS/DEVTOOLS.md`.
 - Run `vp check` and `vp test`.
 
 ## Reference

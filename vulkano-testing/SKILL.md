@@ -79,7 +79,7 @@ No coverage threshold or CI script configured — don't claim one exists without
 
 ## Browser E2E — not a CI suite
 
-No Playwright/Cypress installed. For end-to-end verification of a user flow, drive a real browser with the Playwright MCP or chrome-devtools MCP (navigate, click, fill, screenshot, console/network) as part of verifying the change — agent-driven verification for the task at hand, not a regression suite (see AGENTS.md § Visual verification).
+No Playwright/Cypress installed. For end-to-end verification of a user flow, drive a real browser with the Playwright MCP or chrome-devtools MCP (navigate, click, fill, screenshot, console/network) as part of verifying the change — agent-driven verification for the task at hand, not a regression suite (see `references/AGENTS/DEVTOOLS.md`).
 
 ## After writing
 

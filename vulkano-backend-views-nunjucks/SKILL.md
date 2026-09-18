@@ -171,7 +171,7 @@ Function-call syntax, pipe through `| safe` so the HTML isn't escaped:
 - New public/crawlable view → SEO handoff checklist (title/description/share-image) per `references/AGENTS/SEO.md`, and accessibility minimums (alt text, heading order, landmarks) per `references/AGENTS/ACCESSIBILITY.md` — unless the user opted the area out.
 - New/changed interactive element (link, button, form, download, video) → wire tracking per vulkano-frontend-analytics skill (server-rendered pages use its `gtag.js` snippet path, not `vue-gtag`) — unless the area's Analytics column is off.
 - Controller HTTP test for this view asserts on the rendered HTML body (see TESTING.md).
-- Visual check in a browser (chrome-devtools MCP per AGENTS.md § Visual verification) — layout/styling issues aren't caught by `vp check`.
+- Visual check in a browser (chrome-devtools MCP per `references/AGENTS/DEVTOOLS.md`) — layout/styling issues aren't caught by `vp check`.
 
 ## Handoff
 
