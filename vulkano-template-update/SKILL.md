@@ -18,7 +18,7 @@ Not for updating app code, `frontend/`/`app/`, or dependencies other than `@vulk
 ## Ownership
 
 - **Template-owned** (overwrite from the template): `AGENTS.md` (`CLAUDE.md` is a symlink to it), `references/` (`references/AGENTS/*.md` and `references/CHANGELOG.md`), `.claude/skills/vulkano-skills` (git submodule).
-- **Project-owned** (never overwrite, only migrate): `PROJECT.md`, `README.md`, `.env`, `app/`, `frontend/`, `package.json`. The one exception: the `@vulkano/core` version (step 8).
+- **Project-owned** (never overwrite, only migrate): `PROJECT.md`, `CHANGELOG.md` (the project's own log), `README.md`, `.env`, `app/`, `frontend/`, `package.json`. The one exception: the `@vulkano/core` version (step 8).
 
 ## Steps
 
@@ -27,8 +27,8 @@ Follow in order. Stop and ask before anything not listed. Never run `git commit`
 1. `git status` must be clean; otherwise stop. Create branch `chore/template-docs-sync`.
 2. Skills: `git submodule update --init --remote --merge .claude/skills/vulkano-skills`. Report old → new commit. If this skill itself changed, re-read it before continuing.
 3. Template: add remote `vulkano-template` = `https://github.com/vulkanojs/vulkano.git` (skip if present), then `git fetch vulkano-template`.
-4. Read the template's changelog: `git show vulkano-template/master:references/CHANGELOG.md`. It lists what changed and which migrations project-owned files need.
-5. Diff the template-owned paths. If the project shares history with the template, use `git merge-base HEAD vulkano-template/master` as the base: `git diff <base> vulkano-template/master -- AGENTS.md references`; otherwise diff `HEAD` against `vulkano-template/master`. Report every project-side difference in `AGENTS.md` as a possible local edit (project facts belong in `PROJECT.md`, not `AGENTS.md`).
+4. Read both changelogs. The template's: `git show vulkano-template/master:references/CHANGELOG.md` — what changed upstream and which migrations project-owned files need. This project's `CHANGELOG.md` — what the project changed: local edits to template-owned files, migrations already done, previous `Vulkano template sync <sha>` entries. Interpret them together: skip migrations the project log shows as done or whose condition is already satisfied, and treat logged local edits or deviations as intentional (ask before overwriting them).
+5. Diff the template-owned paths (`AGENTS.md`, `references`). Base: the sha in the project's latest `Vulkano template sync <sha>` entry; if none, `git merge-base HEAD vulkano-template/master` when the project shares history with the template; otherwise `HEAD`. Report every project-side difference in `AGENTS.md` that the project log doesn't explain as a possible local edit (project facts belong in `PROJECT.md`, not `AGENTS.md`).
 6. Show the user a summary: files added / removed / changed. Then apply: `git checkout vulkano-template/master -- AGENTS.md references`, and list (then delete) files under `references/AGENTS` that no longer exist in the template.
 7. Migrate project-owned files using the changelog's **Migration** entries. Each is a condition plus an action: check the condition against the project's current state and skip it if already satisfied. Keep this project's values; change structure only. Always check:
    - `PROJECT.md`: the SEO/Analytics/Accessibility table is the only place that decides per-area opt-outs — keep all rows.
@@ -40,7 +40,8 @@ Follow in order. Stop and ask before anything not listed. Never run `git commit`
    - Otherwise set the new range (`^<latest>`) where the project pins it and run `pnpm install`. Package and lockfile changes are security-sensitive (see `AGENTS.md`): show the diff, and only touch `@vulkano/core`, no other dependency.
    - If the changelog asks for changes in project code, list them for the user; don't apply them silently.
 9. Verify: run `vp check` and `vp test`. Check that every relative link and anchor in `AGENTS.md`, `PROJECT.md` and `references/AGENTS/*.md` resolves. Grep the project for references to removed files (e.g. `DEPLOYMENT.md`, `ARCHITECTURE.md § Multiple entry points`).
-10. Report: files added/removed/changed, migrations applied and skipped, core version old → new, anything ambiguous, and a suggested commit message in the form `[chore] docs: sync agent docs with Vulkano template <sha>`.
+10. Log: add an entry to the project's `CHANGELOG.md`, titled `## <date> — Vulkano template sync <vulkano-template/master sha>`, listing files added/removed/changed, migrations applied and skipped, and core version old → new.
+11. Report: the same summary plus anything ambiguous, and a suggested commit message in the form `[chore] docs: sync agent docs with Vulkano template <sha>`.
 
 ## First run in an older project
 
