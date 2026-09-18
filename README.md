@@ -21,6 +21,7 @@ Each folder at the repo root is a self-contained Claude Code skill (`SKILL.md` w
 - `vulkano-frontend-router` — Vue Router routes, auth guards, current-user fetching.
 - `vulkano-frontend-store` — Pinia store-per-concern, `useAppStore` app-shell exception.
 - `vulkano-seo` — `res.locals.seo`, robots.txt/sitemap.xml, JSON-LD.
+- `vulkano-template-update` — sync a project's agent docs (`AGENTS.md`, `references/AGENTS/`, skills) from the latest Vulkano template, migrating `PROJECT.md` without touching project values.
 - `vulkano-testing` — Vitest layout, `TEST_MONGO_URI` gate, per-layer test patterns.
 
 ## Using this repo as a submodule
