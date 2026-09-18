@@ -7,7 +7,7 @@ description: Use when adding or reviewing tracking on a form, button, download, 
 
 ## Overview
 
-Every project tracks analytics unless the user explicitly opted out for that area (check the SEO/Analytics/Accessibility table in PROJECT.md § Project requirements first — a CMS/admin area is usually Analytics off). Tracking is not opt-in per element: **every** interactive element gets tracked — `<a>`, `<button>`, `<form>`, PDF/file download links, video players, anything clickable. If a task touches one of these and no tracking exists yet, wire it — don't skip silently, and don't wait to be asked.
+Every project tracks analytics unless the area's Analytics column in PROJECT.md § Project requirements is off (that table is the only place that decides — check it first; a CMS/admin area is usually Analytics off). Tracking is not opt-in per element: **every** interactive element gets tracked — `<a>`, `<button>`, `<form>`, PDF/file download links, video players, anything clickable. If a task touches one of these and no tracking exists yet, wire it — don't skip silently, and don't wait to be asked.
 
 ## When to use
 

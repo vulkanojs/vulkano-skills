@@ -176,7 +176,7 @@ Canonical rule lives in vulkano-frontend-component § "Installed UI library is n
 
 ## After writing
 
-- Track both outcomes (`{section}_success` / `{section}_error`) per vulkano-frontend-analytics, unless the user opted out for this area.
+- Track both outcomes (`{section}_success` / `{section}_error`) per vulkano-frontend-analytics, unless the area's Analytics column in PROJECT.md is off.
 - Confirm a11y requirements (labels, `aria-invalid`, `aria-describedby`) per vulkano-frontend-a11y.
 - New/changed `validators.js` rule or `useFormValidation` behavior → test at `test/frontend/<entrypoint>/utils/validators.test.js` / `test/frontend/<entrypoint>/composables/useFormValidation.test.js` per vulkano-testing.
 - Visually verify in a browser: submit with empty fields, invalid values, and valid values.

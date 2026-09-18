@@ -7,7 +7,7 @@ description: Use when adding or reviewing images, navigation, forms, or other in
 
 ## Overview
 
-Every project meets these minimums unless the user explicitly opted out for that area (check the SEO/Analytics/Accessibility table in PROJECT.md § Project requirements — Accessibility is "on" for every area type, including CMS/admin and widgets). If a task touches images, navigation, forms, or an interactive element and minimums aren't met, fix as part of the task — don't skip silently.
+Every project meets these minimums unless the area's Accessibility column in PROJECT.md § Project requirements is off (that table is the only place that decides — Accessibility is "on" for every area type, including CMS/admin and widgets). If a task touches images, navigation, forms, or an interactive element and minimums aren't met, fix as part of the task — don't skip silently.
 
 ## When to use
 
