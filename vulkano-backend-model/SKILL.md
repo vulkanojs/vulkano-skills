@@ -11,14 +11,14 @@ Models live in `app/models/`, auto-loaded as globals (e.g. `Order.js` → `globa
 
 ## When to use
 
-Requires `MONGO_URI` set (`.env`) — a Mongoose model is meaningless without a configured database. If `MONGO_URI` is missing, don't apply this skill; tell the user a database isn't configured yet instead.
+Requires `MONGO_URI` set (`.env`) — a Mongoose model is meaningless without a configured database. If `MONGO_URI` is missing or empty, don't apply this skill; tell the user a database isn't configured yet instead.
 
 - New resource needs a model (schema + CRUD)
 - Adding/editing business logic, validation, or a computed field
 - Wiring a list/get endpoint's related-doc data (`autopopulate`/`_buildPopulate`)
 - Adding a soft-delete field or a business on/off flag
 
-Not for controllers/routes — see vulkano-backend-controller skill. Not for Vue frontend state — see FRONTEND.md.
+Not for controllers/routes — see vulkano-backend-controller skill. Not for Vue frontend state — see vulkano-frontend-store skill (Pinia store per concern).
 
 ## Before implementing
 
@@ -37,7 +37,7 @@ Not for controllers/routes — see vulkano-backend-controller skill. Not for Vue
 
 | Method                       | Purpose                                                                          |
 | ---------------------------- | -------------------------------------------------------------------------------- |
-| `getAll(props)`              | List/paginate. `props` = `{ page, perPage, search, sort, populate }`             |
+| `getAll(props)`              | List/paginate. `props` = `{ page, perPage, search, sort, populate, fields }`     |
 | `get<ModelName>(id, props?)` | Get one record by id. `props` optional, only needed for `?populate=` (see below) |
 | `create(data)`               | Create                                                                           |
 | `update(id, data)`           | Update                                                                           |
@@ -84,6 +84,8 @@ Zero-code alternative — a scaffold model only needs `attributes` (+ optional `
 
 ## `getAll(props)` resolves to one of TWO different shapes — depends on `props.page`
 
+Canonical rule — referenced (not repeated in full) by vulkano-backend-views-handlebars and vulkano-backend-views-nunjucks.
+
 Verified in `node_modules/@vulkano/core/libs/Paginate.js#get` (lines ~216-283):
 
 - `props.page` a number, or omitted (defaults to `1`) → a **page object**: `{ items, page, perPage, totalPages, next, prev, cursor }`. Consumer reads `.items`, never iterates the resolved value itself.
@@ -108,6 +110,12 @@ getAll(props) {
 ```
 
 Validate/cast the value (e.g. confirm it's a valid ObjectId) before using it in the filter if it comes straight from user input.
+
+## Field selection in `getAll` (`?fields=`)
+
+Verified in `node_modules/@vulkano/core/libs/Paginate.js#get` (lines ~223-234, ~273-274, ~260): `getAll`'s `props.fields` — a comma-separated string (`?fields=name,price`) or an array (`['name', 'price']`) — becomes a Mongoose `.select()` (`opts.select = fields.join(' ')`). `getAll({ fields: 'name' })` returns documents with only `name` (plus `_id`, Mongoose always includes it) instead of the full document. Applies to both pagination shapes — the normal page object and the `?page=all` bare array (§ above) — since both go through the same `Paginate.get`. Does NOT apply to `get<ModelName>(id, props)` — that's a plain `findOne`, unrelated to `Paginate.get`, so it always returns the full document regardless of `props.fields`.
+
+No extra code needed in a model's `getAll` for this to work — `props`/`req.query` flowing straight into `Paginate.serializeQuery` is enough. Only add a guard if the endpoint must NOT allow field selection (e.g. it always needs a specific field for business logic downstream) — otherwise a request with `?fields=` that omits that field is a real bug: code assuming a field exists on every `getAll` result breaks silently.
 
 ## `createdAt`/`updatedAt` — never hand-roll
 
@@ -147,4 +155,4 @@ Report: model file created/changed, scaffold vs custom CRUD, hooks added, popula
 
 ## Reference
 
-`node_modules/@vulkano/core/README.md` (§ Models, § Key conventions), `reference/BACKEND.md`. Worked examples: `node_modules/@vulkano/core/examples/models/Example.js` (custom CRUD + hooks + autopopulate), `ExampleWithScaffold.js` (scaffold). Populate internals: `node_modules/@vulkano/core/database/scaffold.js` (`_buildPopulate`/`_parsePopulateEntries`).
+`node_modules/@vulkano/core/README.md` (§ Models, § Key conventions), `references/AGENTS/BACKEND.md`. Worked examples: `node_modules/@vulkano/core/examples/models/Example.js` (custom CRUD + hooks + autopopulate), `ExampleWithScaffold.js` (scaffold). Populate internals: `node_modules/@vulkano/core/database/scaffold.js` (`_buildPopulate`/`_parsePopulateEntries`).

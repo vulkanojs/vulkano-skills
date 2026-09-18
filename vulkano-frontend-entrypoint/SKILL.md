@@ -1,6 +1,6 @@
 ---
 name: vulkano-frontend-entrypoint
-description: Use when creating a brand-new Vue frontend entrypoint in this Vulkano framework project — a CMS/admin panel, a custom landing, or any additional app beyond the existing one — covering the flat-vs-container folder migration, Vite/nodemon wiring, the backend template/controller/catch-all, and the SEO/Analytics/Accessibility area decision.
+description: Use when creating a brand-new frontend entrypoint in this Vulkano framework project — a Vue SPA (CMS/admin panel, a custom landing, or any additional app) or a vanilla-JS bundle for a fully server-rendered page — covering the frontend/<name>/ folder scaffold, Vite/nodemon wiring, the backend template/controller/catch-all, and the SEO/Analytics/Accessibility area decision.
 ---
 
 # Frontend Entrypoint
@@ -9,15 +9,16 @@ description: Use when creating a brand-new Vue frontend entrypoint in this Vulka
 
 A Vulkano project can have more than one Vue app — public front, CMS/admin, a one-off landing. Each gets its own Vite build entry and its own backend template + controller + catch-all route. This skill is for creating a **new** entrypoint. Not for adding a route inside one that already exists (see vulkano-frontend-router). Not for a component/view's own internals (see vulkano-frontend-component).
 
+**An entrypoint isn't always a Vue SPA.** `vite.entries.mjs`'s `entries` map is just `{ name: 'path/to/file.js' }` — `vite.config.mjs` derives the bundle, alias, and manifest entry from that path alone, with no Vue requirement (the `vue()` plugin only activates for `.vue` files it actually encounters). A fully server-rendered area (Nunjucks/Handlebars, no client-side routing) can get its own entry that's plain JS — no `App.vue`/`routes.js`/Pinia — and still gets Vite's dev-server HMR and a production bundle. See § Vanilla-JS entrypoint below.
+
 ## When to use
 
 - Adding a CMS/admin app, a landing page built as its own app, or any second-or-later Vue app to the project
-- Migrating a single-entrypoint project into its first multi-entrypoint layout
+- Adding a compiled/bundled JS entry (with HMR in dev) for a server-rendered page that doesn't need a Vue SPA mount
 
-## Folder placement — threshold rule
+## Folder placement
 
-- **1 entrypoint** — `frontend/` stays flat: `frontend/app.js`, `frontend/App.vue`, `frontend/routes.js`, etc. No subfolder.
-- **2+ entrypoints** — `frontend/` becomes a container. Adding the 2nd entrypoint is what triggers the migration: the existing flat app moves to `frontend/website/` (fixed name for the public front), each new one gets its own `frontend/<name>/` (e.g. `frontend/admin/`).
+`frontend/` is always a container, one subfolder per entrypoint — never flat, even with only 1. The public front is always `frontend/website/` (fixed name); every other entrypoint gets its own `frontend/<name>/` (e.g. `frontend/admin/`). Adding a new entrypoint is just adding another `frontend/<name>/` sibling — no flat-to-container migration to trigger.
 
 ```
 frontend/
@@ -34,7 +35,7 @@ frontend/
     └── ...              # same shape
 ```
 
-See reference/ARCHITECTURE.md § Multiple entry points for the full rationale.
+See references/AGENTS/ARCHITECTURE.md § Multiple entry points for the full rationale.
 
 ## Scaffolding a new entrypoint
 
@@ -61,7 +62,7 @@ frontend/<name>/
 - **`vite.entries.mjs`** — add a key to the `entries` map (this is the single source of truth `vite.config.mjs` reads both `build.rollupOptions.input` and `resolve.alias` from — no `vite.config.mjs` edit needed):
   ```js
   export const entries = {
-    app: 'frontend/website/app.js',
+    website: 'frontend/website/app.js',
     admin: 'frontend/admin/app.js'
   };
   ```
@@ -86,6 +87,20 @@ frontend/<name>/
   ```
   See vulkano-frontend-router § Multiple entry points for why the order matters — convention API routes (`/api/*`) register before `config/routes.js` entries, so `/*` never shadows them regardless of where it sits, but a scoped catch-all still needs to precede the generic one or it gets shadowed by it.
 
+## Vanilla-JS entrypoint (server-rendered page, no Vue SPA)
+
+For an area that's fully server-rendered (see vulkano-backend-views-handlebars/-nunjucks) and only needs some compiled/bundled JS — a bit of interactivity, a third-party widget init, progressive enhancement — not a client-routed app:
+
+```
+frontend/<name>/
+  app.js            # plain JS entry — no App.vue, no routes.js, no Api.js/Pinia unless this page actually calls the API
+  style.scss        # this entry's own style entry, imported from app.js (or injected separately, project's call)
+```
+
+No `views/`/`components/`/`layouts/` folders unless the page's JS is genuinely split into multiple reusable pieces — most vanilla entries are one file. Skip the Vue-specific steps below: no `createWebHistory(base)` (there's no Vue Router), no `<div id="app">` mount point in the backend template, no frontend catch-all (the page is server-rendered per normal controller/view routing — see vulkano-backend-views — so a hard refresh always hits the real controller, not a client router).
+
+Wiring is otherwise identical — same `vite.entries.mjs` key, same `@<name>` alias, same `vite({ entry: '<name>', type: '...' })` calls in the backend template (see Wiring below), same HMR in dev. The only difference is what's on the other end of that bundle: a `createApp(App).mount('#app')` call for a Vue entry, vs. whatever plain DOM code this page needs for a vanilla one.
+
 ## SEO / Analytics / Accessibility per area
 
 Every new entrypoint is a new "area" per PROJECT.md § Project requirements. Before considering the entrypoint done:
@@ -98,9 +113,10 @@ Every new entrypoint is a new "area" per PROJECT.md § Project requirements. Bef
 
 - Confirm the new key was added to `vite.entries.mjs` — its `@<name>` alias and `rollupOptions.input`/`environments` entry in `vite.config.mjs` both derive from it automatically, nothing else to edit.
 - Run `vp build` and confirm the new entry appears in `public/.vite/manifest.json` — each entry builds as its own isolated Rolldown pass (Vite's Environment API, see `vite.config.mjs`) so it never shares a chunk with another entry, then all entries' manifests merge into that one file.
-- Hit the new area's path in a browser; confirm a hard refresh doesn't 404 (catch-all working, not just in-app navigation) AND the view actually renders — a 200 with a blank page is the tell for a missing/wrong `createWebHistory(base)` (see Router base path above), not a catch-all problem.
+- Vue entrypoint: hit the new area's path in a browser; confirm a hard refresh doesn't 404 (catch-all working, not just in-app navigation) AND the view actually renders — a 200 with a blank page is the tell for a missing/wrong `createWebHistory(base)` (see Router base path above), not a catch-all problem.
+- Vanilla-JS entrypoint: confirm the bundle actually loads on the rendered page (Network tab) and, in dev, that editing `app.js` HMR-updates without a full page reload — no catch-all/router check needed, it's not a client-routed app.
 - Run `vp check` and `vp test`.
 
 ## Reference
 
-reference/ARCHITECTURE.md § Multiple entry points, vulkano-frontend-router § Multiple entry points / Backend catch-all, vulkano-backend-controller, vulkano-seo, PROJECT.md § Project requirements.
+references/AGENTS/ARCHITECTURE.md § Multiple entry points, vulkano-frontend-router § Multiple entry points / Backend catch-all, vulkano-backend-controller, vulkano-seo, PROJECT.md § Project requirements.

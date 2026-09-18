@@ -1,21 +1,22 @@
 ---
 name: vulkano-frontend-analytics
-description: Use when adding or reviewing tracking on a frontend form, button, download, video, or page in this Vulkano framework project — vue-gtag/gtag.js wiring, GA4 event naming, GTM element ids, custom-dimension warnings, and the noindex/private-mode warning.
+description: Use when adding or reviewing tracking on a form, button, download, video, or page in this Vulkano framework project — Vue frontend/ or server-rendered app/views — vue-gtag/gtag.js wiring, GA4 event naming, GTM element ids, custom-dimension warnings, and the noindex/private-mode warning.
 ---
 
 # Frontend Analytics
 
 ## Overview
 
-Every project tracks analytics unless the user explicitly opted out for that area (check the SEO/Analytics/Accessibility table in the root CLAUDE.md first — a CMS/admin area is usually Analytics off). Tracking is not opt-in per element: **every** interactive element gets tracked — `<a>`, `<button>`, `<form>`, PDF/file download links, video players, anything clickable. If a task touches one of these and no tracking exists yet, wire it — don't skip silently, and don't wait to be asked.
+Every project tracks analytics unless the user explicitly opted out for that area (check the SEO/Analytics/Accessibility table in PROJECT.md § Project requirements first — a CMS/admin area is usually Analytics off). Tracking is not opt-in per element: **every** interactive element gets tracked — `<a>`, `<button>`, `<form>`, PDF/file download links, video players, anything clickable. If a task touches one of these and no tracking exists yet, wire it — don't skip silently, and don't wait to be asked.
 
 ## When to use
 
-Any new/changed interactive element in `frontend/` — links, buttons, forms, downloads, video, page view. Not for backend event logging. Not for SEO — see reference/SEO.md.
+Any new/changed interactive element — links, buttons, forms, downloads, video, page view — in `frontend/` (Vue) or `app/views/` (server-rendered, see vulkano-backend-views-handlebars/-nunjucks). Not for backend event logging. Not for SEO — see vulkano-seo skill.
 
 ## Universal id requirement
 
 Every tracked element gets a unique `id="{section}-{action}"` (hyphenated) — no exceptions, regardless of provider:
+
 - `<a>` / nav links: `id="hero-cta"`, `id="footer-privacy"`
 - `<button>`: `id="checkout-submit"`
 - `<form>`: `id="contact-form"`
@@ -66,11 +67,11 @@ New projects default to `SEO_NOINDEX=true` (private/noindex). Tracking still fir
 
 ## After writing
 
-- Confirm the area's Analytics column (root CLAUDE.md table) isn't "off" before adding anything.
+- Confirm the area's Analytics column (PROJECT.md § Project requirements table) isn't "off" before adding anything.
 - Surface the custom-dimension and private-mode warnings when they apply — don't skip silently.
 - Verify the event actually fires: check the browser Network tab (request to `google-analytics.com`/`analytics.google.com`) or GA4 DebugView, for both outcomes on a form (`{section}_success` and `{section}_error`). Wiring the `event(...)` call is not enough — confirm the request leaves the browser with the right name/params.
 - Run `vp check` and `vp test`.
 
 ## Reference
 
-`reference/ANALYTICS.md` (full detail, incl. `reference/LAUNCH.md` pre-production checklist).
+`references/AGENTS/ANALYTICS.md` (full detail, incl. `references/AGENTS/LAUNCH.md` pre-production checklist).

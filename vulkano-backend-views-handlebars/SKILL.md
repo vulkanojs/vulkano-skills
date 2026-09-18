@@ -7,7 +7,7 @@ description: Use when creating or editing a server-rendered backend view, layout
 
 ## Overview
 
-Backend views (`app/views/*.html`) are server-rendered templates — the crawlable surface for public pages (see SEO.md). A controller renders one via `res.render('folder/file.html', { ...locals })`. Separate from the Vue SPA (`frontend/`), which is client-rendered and not SEO-covered.
+Backend views (`app/views/*.html`) are server-rendered templates — the crawlable surface for public pages (see `references/AGENTS/SEO.md`). A controller renders one via `res.render('folder/file.html', { ...locals })`. Separate from the Vue SPA (`frontend/`), which is client-rendered and not SEO-covered.
 
 **This skill applies only when `app/config/views.js` sets `engine: 'handlebars'`.** No file present, or `engine: 'nunjucks'`, means Nunjucks (the core default) — use the vulkano-backend-views-nunjucks skill instead. For the `res.render` vs `res.vsr` decision itself (HTML view vs JSON API), see vulkano-backend-views.
 
@@ -19,13 +19,13 @@ Backend views (`app/views/*.html`) are server-rendered templates — the crawlab
 - Passing a translated string into a view
 - Formatting a date, number, or currency value for display
 
-Not for Vue components/views (`frontend/<entrypoint>?/views/` — flat `frontend/views/` with 1 entrypoint, `frontend/website/views/` etc. once 2+) — see FRONTEND.md. Not for the controller that renders it — see vulkano-backend-controller skill.
+Not for Vue components/views (`frontend/<entrypoint>/views/` — always its own entrypoint subfolder, e.g. `frontend/website/views/`, even with only 1) — see vulkano-frontend-component skill. Not for the controller that renders it — see vulkano-backend-controller skill.
 
 ## Before implementing
 
 - Confirm `app/config/views.js` really sets `engine: 'handlebars'` — don't apply this skill on an assumption.
 - Check `app/views/_shared/templates/default.html` (the `defaultLayout`) before writing a new page — it already owns `<head>`.
-- Check whether this view belongs to a public/crawlable area (needs the SEO block) or a CMS/admin area (doesn't) — see PROJECT.md § Project requirements, and ARCHITECTURE.md § Multiple entry points if the project splits front/CMS.
+- Check whether this view belongs to a public/crawlable area (needs the SEO block) or a CMS/admin area (doesn't) — see PROJECT.md § Project requirements, and `references/AGENTS/ARCHITECTURE.md` § Multiple entry points if the project splits front/CMS.
 - Trace the controller action that renders this view — confirm what locals it actually passes (`res.render('x/y.html', { ...locals })`). Don't assume a variable exists in the template; if data is missing, add it in the controller/model, not with a query/fetch from inside the template.
 - Markup repeated across 2+ views → extract to `app/views/_shared/partials/`, included via `{{> name}}`, instead of duplicating. This applies even when you're adding those 2+ views one at a time in the same task — check back against files you already wrote earlier in the SAME task, not just pre-existing ones. E.g. a branded side-panel/header block copy-pasted into `login.html`, then again into `error.html`, then again into a third view → stop, move it to `_shared/partials/oauth-brand.html` and include it in all three:
   ```html
@@ -116,7 +116,7 @@ Layout prints `res.locals.seo.*`, set by `app/config/middlewares/seo.js` and ove
 {{#if seo.noindex}}<meta name="robots" content="noindex, nofollow" />{{/if}}
 ```
 
-Full convention (defaults, private-mode noindex, handoff checklist): [reference/SEO.md](../../../reference/SEO.md). A CMS/admin layout skips this block entirely — hardcode its `<title>` instead of interpolating `seo.*`.
+Full convention (defaults, private-mode noindex, handoff checklist): [references/AGENTS/SEO.md](../../../../references/AGENTS/SEO.md). A CMS/admin layout skips this block entirely — hardcode its `<title>` instead of interpolating `seo.*`.
 
 ## i18n
 
@@ -173,11 +173,12 @@ Hash-argument syntax via triple-stash (helpers are wrapped so `{{{helper key=val
 <!-- before </body> -->
 ```
 
-`entry` must match a key in `vite.entries.mjs`'s `entries` map — use the entry name for the area this view belongs to (front vs CMS, see ARCHITECTURE.md § Multiple entry points).
+`entry` must match a key in `vite.entries.mjs`'s `entries` map — use the entry name for the area this view belongs to (front vs CMS, see `references/AGENTS/ARCHITECTURE.md` § Multiple entry points).
 
 ## After writing
 
-- New public/crawlable view → SEO handoff checklist (title/description/share-image) per SEO.md, and accessibility minimums (alt text, heading order, landmarks) per ACCESSIBILITY.md — unless the user opted the area out.
+- New public/crawlable view → SEO handoff checklist (title/description/share-image) per `references/AGENTS/SEO.md`, and accessibility minimums (alt text, heading order, landmarks) per `references/AGENTS/ACCESSIBILITY.md` — unless the user opted the area out.
+- New/changed interactive element (link, button, form, download, video) → wire tracking per vulkano-frontend-analytics skill (server-rendered pages use its `gtag.js` snippet path, not `vue-gtag`) — unless the area's Analytics column is off.
 - Controller HTTP test for this view asserts on the rendered HTML body (see TESTING.md).
 - Visual check in a browser (chrome-devtools MCP per AGENTS.md § Visual verification) — layout/styling issues aren't caught by `vp check`.
 
@@ -187,4 +188,4 @@ Report: view file(s) created/changed, controller-action it's rendered from, layo
 
 ## Reference
 
-`reference/SEO.md`, `reference/ARCHITECTURE.md` (§ Multiple entry points), `reference/ACCESSIBILITY.md`, `app/views/_shared/templates/default.html` (reference layout), `app/config/views.js` (engine setting), `node_modules/@vulkano/core/bootstrap/engines/handlebars.js` (defaultLayout/partialsDir/helper wiring), `node_modules/@vulkano/core/views/helpers/vite.js` and `views/helpers/t.js` (built-in helper implementations), `node_modules/@vulkano/core/examples/config/views/config.js` (engine override template), `node_modules/@vulkano/core/examples/config/views/helpers/strpad.js` and `examples/config/views/filters/example.js` (custom helper templates).
+`references/AGENTS/SEO.md`, `references/AGENTS/ARCHITECTURE.md` (§ Multiple entry points), `references/AGENTS/ACCESSIBILITY.md`, `app/views/_shared/templates/default.html` (reference layout), `app/config/views.js` (engine setting), `node_modules/@vulkano/core/bootstrap/engines/handlebars.js` (defaultLayout/partialsDir/helper wiring), `node_modules/@vulkano/core/views/helpers/vite.js` and `views/helpers/t.js` (built-in helper implementations), `node_modules/@vulkano/core/examples/config/views/config.js` (engine override template), `node_modules/@vulkano/core/examples/config/views/helpers/strpad.js` and `examples/config/views/filters/example.js` (custom helper templates).

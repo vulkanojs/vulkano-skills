@@ -16,7 +16,7 @@ Vulkano resolves routes by convention: URL segments map to `/:resource/:method?/
 - New or edited socket event handler
 - Editing an existing controller's method or route
 
-Not for pure `frontend/` frontend work — see FRONTEND.md instead.
+Not for pure `frontend/` frontend work — see vulkano-frontend-component, vulkano-frontend-router, or vulkano-frontend-entrypoint instead.
 
 ## Before implementing
 
@@ -29,6 +29,7 @@ Not for pure `frontend/` frontend work — see FRONTEND.md instead.
 | Kind              | Path                                          | Example                 |
 | ----------------- | --------------------------------------------- | ----------------------- |
 | View controller   | `app/controllers/<Name>Controller.js`         | `HomeController.js`     |
+| Module controller | `app/controllers/config/<Name>Controller.js`  | `VatTypesController.js` |
 | API controller    | `app/controllers/api/<Name>Controller.js`     | `ProductsController.js` |
 | Socket controller | `app/controllers/sockets/<Name>Controller.js` | `EchoController.js`     |
 
@@ -165,7 +166,7 @@ Handler signature is always `({ socket, body }, callback)`. Requires `app/config
 - New/changed controller → add a test under `test/app/controllers/*.http.test.js` (see TESTING.md). API controllers assert the `res.vsr` envelope (`{ success, statusCode, data }`); view controllers assert the rendered HTML body.
 - Run `vp check` and `vp test`.
 - Never `require()` a model or service — both are auto-loaded globals, reference by name (`Product`, `Upload`, ...).
-- New public/crawlable view → apply SEO essentials (SEO.md) unless that area's SEO column is off (see PROJECT.md § Project requirements).
+- New public/crawlable view → apply SEO essentials (`references/AGENTS/SEO.md`) unless that area's SEO column is off (see PROJECT.md § Project requirements).
 
 ## Handoff
 
@@ -173,4 +174,4 @@ Report: which file(s) were created/changed, which convention applied (view/API/s
 
 ## Reference
 
-Full detail: `node_modules/@vulkano/core/README.md` (§ Routing, § Scaffold, § Socket.io, § Models) and `reference/BACKEND.md`. Worked examples: `node_modules/@vulkano/core/examples/controllers/` (`ExampleController.js`, `RestExampleController.js`, `RestScaffoldController.js`). Related skills: vulkano-backend-model (CRUD signatures, `_buildPopulate`, `active`/soft-delete — required for anything a controller calls on a model), vulkano-backend-views (res.render → HTML template skill routing).
+Full detail: `node_modules/@vulkano/core/README.md` (§ Routing, § Scaffold, § Socket.io, § Models) and `references/AGENTS/BACKEND.md`. Worked examples: `node_modules/@vulkano/core/examples/controllers/` (`ExampleController.js`, `RestExampleController.js`, `RestScaffoldController.js`). Related skills: vulkano-backend-model (CRUD signatures, `_buildPopulate`, `active`/soft-delete — required for anything a controller calls on a model), vulkano-backend-views (res.render → HTML template skill routing).

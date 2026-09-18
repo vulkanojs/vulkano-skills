@@ -7,7 +7,7 @@ description: Use when adding a Vue Router route, an auth/login guard, or a route
 
 ## Overview
 
-`frontend/<entrypoint>?/routes.js` is a hand-written route array (Vue Router, HTML5 history mode) — flat `frontend/routes.js` with 1 entrypoint, one per subfolder once 2+ (`frontend/website/routes.js`, `frontend/admin/routes.js`), each with its own routes. No auto-discovery of `views/`. Auth state is never cached client-side — every route change re-fetches the current user from the backend.
+`frontend/<entrypoint>/routes.js` is a hand-written route array (Vue Router, HTML5 history mode) — one per entrypoint subfolder, always (`frontend/website/routes.js`, `frontend/admin/routes.js`, ...), each with its own routes. No auto-discovery of `views/`. Auth state is never cached client-side — every route change re-fetches the current user from the backend.
 
 ## When to use
 
@@ -20,7 +20,7 @@ Not for the view's own file layout — see vulkano-frontend-component. Not for t
 ## Adding a route
 
 ```js
-// frontend/<entrypoint>?/routes.js
+// frontend/<entrypoint>/routes.js
 import { createRouter } from 'vue-router';
 
 import Layout from './layouts/Layout.vue';
@@ -40,6 +40,20 @@ const routes = [
 
 export default (history) => createRouter({ history, routes });
 ```
+
+`routes.js` takes the `history` object rather than creating it — the actual `createWebHistory(...)` call, and its base-path scope, lives in `app.js`:
+
+```js
+// frontend/website/app.js — public front, mounted at '/', no base
+const router = createRouter(createWebHistory());
+```
+
+```js
+// frontend/admin/app.js — mounted at '/admin', base MUST match
+const router = createRouter(createWebHistory('/admin'));
+```
+
+Every non-root entrypoint needs that scope — see § Router base path below for why omitting it breaks routing once served for real (not just in isolated dev testing).
 
 Route path and view folder mirror each other (kebab-case URL → PascalCase folder) — see vulkano-frontend-component for the full naming convention.
 
@@ -116,9 +130,14 @@ module.exports = {
 
 Without it, every non-`/` client route 404s on hard refresh/direct URL while still working via in-app navigation — that split symptom (`<router-link>` works, refresh 404s) is the tell this is missing. Safe to keep last: convention API routes (`app/controllers/api/*`) register before `config/routes.js` entries, so `/*` never shadows an API route.
 
+**Only add a `/*` (or scoped `/<area>/*`) catch-all for an area that actually mounts a Vue app** — check that its backend template has `<div id="app">` + `{{ vite({ entry: '<name>' }) }}` (e.g. `app/views/_shared/templates/default.html`). A fully server-rendered area (extending `_shared/templates/static.html` or similar, no Vue mount point) must **not** get a blanket `/*`: `@vulkano/core` already returns a real `404` via its built-in handler (`app/views/_shared/errors/404.html`) for any unmatched route in that area, and a catch-all there would intercept it and soft-200 every invalid URL into the homepage instead — wrong for SEO and for users. When adding the catch-all for a mounted area, always add both halves together, never one without the other:
+
+1. **Backend**: the scoped (or generic) catch-all above.
+2. **Frontend**: a Vue Router catch-all in that entrypoint's `routes.js` — `{ path: '/:pathMatch(.*)*', component: NotFound }` — rendering a `views/NotFound/Index.vue`, so an invalid path inside that area shows a real 404 UI instead of silently re-rendering the home route.
+
 ### Multiple entry points (e.g. a separate `/admin` area)
 
-Creating a brand-new entrypoint (a CMS/admin app, a custom landing, or any other split app separate from the public front) — the flat-vs-container folder migration, Vite/nodemon wiring, and the backend template/controller/catch-all scaffold — is covered by vulkano-frontend-entrypoint. Use it whenever the task is adding the entrypoint itself, not just a route inside one that already exists.
+Creating a brand-new entrypoint (a CMS/admin app, a custom landing, or any other split app separate from the public front) — the `frontend/<name>/` folder scaffold, Vite/nodemon wiring, and the backend template/controller/catch-all scaffold — is covered by vulkano-frontend-entrypoint. Use it whenever the task is adding the entrypoint itself, not just a route inside one that already exists.
 
 Once that entrypoint exists, each one still needs its **own** backend catch-all, scoped to its path prefix, registered **before** the generic `/*` so the more specific pattern isn't shadowed by it:
 
@@ -141,7 +160,7 @@ No `localStorage`/`sessionStorage` for the token or the user object — both are
 Re-fetch the current user on every route change instead of caching it in a store across navigations:
 
 ```js
-// frontend/<entrypoint>?/routes.js (or a separate router/guards.js imported here)
+// frontend/<entrypoint>/routes.js (or a separate router/guards.js imported here)
 router.beforeEach(async (to) => {
   const isAuthRoute = to.path === '/login';
   let user = null;
@@ -167,4 +186,4 @@ router.beforeEach(async (to) => {
 
 ## Reference
 
-`reference/FRONTEND.md` § Adding a route / SPA catch-all, vulkano-backend-auth (backend session-check convention), AGENTS.md § Security considerations (session storage rules).
+`references/AGENTS/ROUTING.md` (backend catch-all, cross-cutting), `references/AGENTS/FRONTEND.md` § Security, vulkano-backend-auth (backend session-check convention).

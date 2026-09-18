@@ -10,7 +10,7 @@ description: Use when deciding how a controller action in this Vulkano framework
 A controller action produces one of two response shapes — pick based on what's consuming it, not habit:
 
 - **`res.vsr(promise)`** — JSON, no template file, no view engine involved. `{ success, statusCode, data }` envelope. For an API endpoint (`app/controllers/api/*`) consumed by the Vue SPA, a socket handler, or an external client. Full convention: vulkano-backend-controller skill (§ View vs API response).
-- **`res.render('folder/file.html', { ...locals })`** — HTML, rendered through a template engine, the crawlable surface for public pages (see SEO.md). For a page a browser navigates to directly.
+- **`res.render('folder/file.html', { ...locals })`** — HTML, rendered through a template engine, the crawlable surface for public pages (see `references/AGENTS/SEO.md`). For a page a browser navigates to directly.
 
 If the answer is `res.vsr`, stop here — go to vulkano-backend-controller, nothing template-related applies.
 

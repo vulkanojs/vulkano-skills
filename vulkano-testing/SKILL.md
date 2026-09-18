@@ -11,11 +11,11 @@ Runner is Vitest via `vp test`. Every new/changed controller, model, service, or
 
 ## When to use
 
-Any task that creates/edits `app/controllers/`, `app/models/`, `app/services/`, `app/config/middlewares/`, `app/config/sockets/`, `frontend/<entrypoint>?/store/`, or `frontend/<entrypoint>?/composables/`/`utils/` code — after writing the code, write/update its test before considering the task done.
+Any task that creates/edits `app/controllers/`, `app/models/`, `app/services/`, `app/config/middlewares/`, `app/config/sockets/`, `frontend/<entrypoint>/store/`, or `frontend/<entrypoint>/composables/`/`utils/` code — after writing the code, write/update its test before considering the task done.
 
-## Before running anything — `TEST_MONGO_URI`
+## Database — `TEST_MONGO_URI`, optional
 
-**Mandatory, closed — no fallback to `MONGO_URI`.** `test/helpers/bootstrap.js` throws before booting if it's missing, and this gates the _entire_ suite (even DB-free script tests, since `setupFiles` runs once for every file). Set `TEST_MONGO_URI` in `.env` to a dedicated test database — never the same one as `MONGO_URI` — before running `vp test` at all.
+**No fallback to `MONGO_URI`, ever** — `test/helpers/bootstrap.js` deletes `process.env.MONGO_URI` when `TEST_MONGO_URI` isn't set, so a test suite never connects to the dev/prod database. Without it, `@vulkano/core`'s `loadDatabaseApplication()` sees a falsy `connection` and skips `mongoose.connect()` entirely (`node_modules/@vulkano/core/database/mongodb.js`) — the app still boots (`waitForReady()` resolves), models/controllers with no DB-dependent logic still testable, only DB reads/writes fail. Set `TEST_MONGO_URI` in `.env` to a dedicated test database — never the same one as `MONGO_URI` — as soon as a model, or anything that reads/writes one, needs a real test.
 
 ## Directory layout — mirror the source tree
 
@@ -32,17 +32,6 @@ test/
     integration/<Flow>.test.js
   <script>.test.js            standalone scripts/*.js not under app/
   frontend/
-    store/<name>.test.js       # only while frontend/ is flat (1 entrypoint)
-    composables/<name>.test.js
-    utils/<name>.test.js
-    integration/<Flow>.test.js
-```
-
-Mirrors `frontend/`'s own threshold rule (see vulkano-frontend-entrypoint). Once a 2nd entrypoint exists and `frontend/` becomes a container, tests move under it the same way:
-
-```
-test/
-  frontend/
     website/
       store/<name>.test.js
       composables/<name>.test.js
@@ -55,20 +44,20 @@ test/
       integration/<Flow>.test.js
 ```
 
-Never `test/admin/` as a root-level sibling — that only made sense before the container convention existed.
+Mirrors `frontend/`'s own convention (see vulkano-frontend-entrypoint): `test/frontend/` is always a container, one subfolder per entrypoint, matching `frontend/<entrypoint>/` exactly — never `test/admin/` as a root-level sibling.
 
 ## Patterns by test type
 
-| Type                     | Path                                                        | Pattern                                                                                                                                                                                                                                                                                                                         |
-| ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Model                    | `test/app/models/*.test.js`                                 | `beforeAll(() => waitForReady())`, `afterEach(() => dbCleanup.clearCollections('Name'))`, assert business rules directly (`.rejects.toThrow(...)` for invalid input)                                                                                                                                                            |
-| Controller/HTTP          | `test/app/controllers/*.http.test.js`                       | Same setup; hit the real running app with native `fetch` against `http://localhost:${process.env.PORT}` — no `supertest`. API: assert `res.vsr()` envelope `{ success, statusCode, data }`. View: assert rendered HTML body                                                                                                     |
-| Service                  | `test/app/services/*.test.js`                               | Same boot/mock pattern, call the function directly (no HTTP)                                                                                                                                                                                                                                                                    |
-| Middleware               | `test/app/middlewares/*.test.js`                            | Unit-test with mock `req`/`res`/`next` for pure logic, OR verify end-to-end through a controller/HTTP test                                                                                                                                                                                                                      |
-| Integration              | `test/app/integration/*.test.js`                            | Full business flow across models (signup → login → protected route); factory helpers from `test/helpers/`; clear every touched collection in dependency order                                                                                                                                                                   |
-| Script                   | `test/<script>.test.js`                                     | Plain unit tests, no boot/DB — still gated by `TEST_MONGO_URI` (shared `setupFiles`)                                                                                                                                                                                                                                            |
-| Frontend store           | `test/frontend/<entrypoint>?/store/*.test.js`               | No app boot/DB; `createPinia()` + `setActivePinia()` in `beforeEach`; inject a mock `$api` — never hit real network; shim browser globals or mark `// @vitest-environment jsdom` if a real DOM is needed                                                                                                                        |
-| Frontend composable/util | `test/frontend/<entrypoint>?/{composables,utils}/*.test.js` | Plain unit test, no app boot/DB, no Pinia, no `jsdom` unless the composable touches the DOM; call the exported function(s) directly with fixture input, assert the returned value (e.g. `V.required('msg')('')` → `'msg'`; `useFormValidator(model, rules).validate(cb)` → `cb` called with `isValid`, `fieldErrors` populated) |
+| Type                     | Path                                                       | Pattern                                                                                                                                                                                                                                                                                                                         |
+| ------------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Model                    | `test/app/models/*.test.js`                                | `beforeAll(() => waitForReady())`, `afterEach(() => dbCleanup.clearCollections('Name'))`, assert business rules directly (`.rejects.toThrow(...)` for invalid input)                                                                                                                                                            |
+| Controller/HTTP          | `test/app/controllers/*.http.test.js`                      | Same setup; hit the real running app with native `fetch` against `http://localhost:${process.env.PORT}` — no `supertest`. API: assert `res.vsr()` envelope `{ success, statusCode, data }`. View: assert rendered HTML body                                                                                                     |
+| Service                  | `test/app/services/*.test.js`                              | Same boot/mock pattern, call the function directly (no HTTP)                                                                                                                                                                                                                                                                    |
+| Middleware               | `test/app/middlewares/*.test.js`                           | Unit-test with mock `req`/`res`/`next` for pure logic, OR verify end-to-end through a controller/HTTP test                                                                                                                                                                                                                      |
+| Integration              | `test/app/integration/*.test.js`                           | Full business flow across models (signup → login → protected route); factory helpers from `test/helpers/`; clear every touched collection in dependency order                                                                                                                                                                   |
+| Script                   | `test/<script>.test.js`                                    | Plain unit tests, no boot/DB, no `TEST_MONGO_URI` needed unless the script itself touches a model                                                                                                                                                                                                                               |
+| Frontend store           | `test/frontend/<entrypoint>/store/*.test.js`               | No app boot/DB; `createPinia()` + `setActivePinia()` in `beforeEach`; inject a mock `$api` — never hit real network; shim browser globals or mark `// @vitest-environment jsdom` if a real DOM is needed                                                                                                                        |
+| Frontend composable/util | `test/frontend/<entrypoint>/{composables,utils}/*.test.js` | Plain unit test, no app boot/DB, no Pinia, no `jsdom` unless the composable touches the DOM; call the exported function(s) directly with fixture input, assert the returned value (e.g. `V.required('msg')('')` → `'msg'`; `useFormValidator(model, rules).validate(cb)` → `cb` called with `isValid`, `fieldErrors` populated) |
 
 Mock outbound external calls (`ApiClient`, third-party APIs) with `vi.spyOn(...).mockResolvedValue(...)`, restored in `afterEach` — never hit a real third-party endpoint from a test.
 
@@ -82,7 +71,7 @@ Mock outbound external calls (`ApiClient`, third-party APIs) with `vi.spyOn(...)
 ## Running
 
 ```
-vp test          # full suite once — throws immediately if TEST_MONGO_URI unset
+vp test          # full suite once — runs without a DB if TEST_MONGO_URI unset (DB-dependent tests will fail)
 vp test watch    # watch mode
 ```
 
@@ -99,4 +88,4 @@ No Playwright/Cypress installed. For end-to-end verification of a user flow, dri
 
 ## Reference
 
-`reference/TESTING.md` (full detail), `test/app/controllers/Home.http.test.js` (existing worked example), vulkano-backend-model, vulkano-backend-controller, vulkano-backend-auth (auth-flow test coverage: `req.auth`, JWT cookie).
+`references/AGENTS/TESTING.md` (full detail), `test/app/controllers/Home.http.test.js` (existing worked example), vulkano-backend-model, vulkano-backend-controller, vulkano-backend-auth (auth-flow test coverage: `req.auth`, JWT cookie).
