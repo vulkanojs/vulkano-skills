@@ -42,7 +42,7 @@ git submodule update --remote --merge .claude/skills/vulkano-skills
 
 ## Duplication with `references/AGENTS/*.md` is intentional
 
-Some mandatory content (e.g. `ARCHITECTURE.md` § Multiple entry points wiring steps) is deliberately repeated in both a consuming project's `references/AGENTS/*.md` and the matching skill here. This submodule can be removed or left uninstalled in a given project, so the project's own `references/AGENTS/*.md` must stay mandatory and self-sufficient on its own — it can't depend on this submodule for critical info. Skills here are the detailed/actionable version; `references/AGENTS/*.md` is the fallback. Don't collapse that duplication into a pointer.
+Some mandatory content (e.g. `ENTRYPOINTS.md` wiring steps) is deliberately repeated in both a consuming project's `references/AGENTS/*.md` and the matching skill here. This submodule can be removed or left uninstalled in a given project, so the project's own `references/AGENTS/*.md` must stay mandatory and self-sufficient on its own — it can't depend on this submodule for critical info. Skills here are the detailed/actionable version; `references/AGENTS/*.md` is the fallback. Don't collapse that duplication into a pointer.
 
 ## Adding or editing a skill
 

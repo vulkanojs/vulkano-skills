@@ -1,15 +1,15 @@
 ---
 name: vulkano-frontend-form
-description: MANDATORY — load BEFORE writing or editing ANY `<form>` in this Vulkano project's frontend/, no exceptions, even a "quick" one-field form. Trigger words — form, `<form>`, input, field, validation, required field, contact form, login form, signup, submit button, CRUD create/edit view. Covers required-field asterisks, JS-only rules-based validation via the shared useFormValidator composable, fieldErrors pattern, input types, and date-picker choice. Do not write form markup/logic from memory of a past form — conventions in this skill may have moved.
+description: MANDATORY — load BEFORE writing or editing ANY `<form>` in this Vulkano project's frontend/, no exceptions, even a "quick" one-field form. Trigger words — form, `<form>`, input, field, validation, required field, contact form, login form, signup, submit button, CRUD create/edit view. Covers required-field asterisks, JS-only rules-based validation via the shared useFormValidation composable, fieldErrors pattern, input types, and date-picker choice. Do not write form markup/logic from memory of a past form — conventions in this skill may have moved.
 ---
 
 # Frontend Form
 
 ## Overview
 
-Forms never rely on native browser validation UI (`required`/`:invalid` styling, error bubbles) — it can't be styled consistently and breaks the design system. Validation is always hand-rolled in JS: a rules object per field, checked by the shared `useFormValidator` composable, error state exposed as `fieldErrors`, message rendered inline.
+Forms never rely on native browser validation UI (`required`/`:invalid` styling, error bubbles) — it can't be styled consistently and breaks the design system. Validation is always hand-rolled in JS: a rules object per field, checked by the shared `useFormValidation` composable, error state exposed as `fieldErrors`, message rendered inline.
 
-`useFormValidator` is a project-owned, dependency-free composable — not a third-party validation library. If a validation library is added to the project later, swap the composable's internals only; every form's `formRules`/`validate(...)` usage stays unchanged.
+`useFormValidation` is a project-owned, dependency-free composable — not a third-party validation library. If a validation library is added to the project later, swap the composable's internals only; every form's `formRules`/`validate(...)` usage stays unchanged.
 
 ## When to use
 
@@ -19,15 +19,15 @@ Not for component file layout — see vulkano-frontend-component. Not for a11y a
 
 ## Required-field pattern
 
-- Validation runs through `const { fieldErrors, validate } = useFormValidator(form, formRules)` (see Skeleton) — never native `required`/`:invalid` UI.
+- Validation runs through `const { fieldErrors, validate, clearError } = useFormValidation(formRules)` and `validate(form)` — synchronous, returns a boolean (see Skeleton). Never native `required`/`:invalid` UI.
 - `formRules` is a plain object: `{ email: [V.required('...'), V.email('...')] }` — each entry an array of validator functions from `frontend/<entrypoint>/utils/validators.js` (`V.required(message)`, `V.email(message)`, ...), checked in order, first failing rule wins.
-- `fieldErrors` is the reactive object returned by `useFormValidator` — never re-declared locally.
+- `fieldErrors` is the reactive object returned by `useFormValidation` — never re-declared locally.
 - Every required field's label gets a red asterisk: reuse a shared `.field-required` (or equivalent BEM element) styled with the project's danger/error color token — never hardcode a hex/named red per view. Token name and scale (`--color-danger`, `--color-danger-500`, `--color-error`, whatever this project's own theme uses) is a project decision, not a framework-fixed name — check for an existing one first. **Neither the class nor a danger/error token exists in a fresh scaffold** (checked: no `frontend/**/*.scss` defines one) — the first form in a project defines both once, in a shared partial (e.g. `frontend/<entrypoint>/scss/_tokens.scss`, imported from `style.scss`), and every form after that reuses them.
 - Error message rendered inline below the input: `<span class="*__field-error">{{ fieldErrors.email }}</span>`.
 - Invalid input gets a `*__input--invalid` class for the red border.
 - Required inputs keep the native `required` attribute even though `novalidate` suppresses its browser UI — not redundant with `V.required(...)` in `formRules`: it stays for the accessibility tree, gives a quick visual signal in devtools without opening `formRules`, and a mismatch between the two (required in markup but not in rules, or vice versa) is a bug worth catching. See vulkano-frontend-a11y § Forms.
-- No `frontend/<entrypoint>/views/Login/` exists in a fresh scaffold — it's not a file to go open and copy. Follow the `useFormValidator` + `formRules` + `fieldErrors` + `<span class="*__field-error">` + `*__input--invalid` shape from the Skeleton below instead; once a project's first login/form view exists, treat _that_ as the local reference for the next one.
-- `composables/useFormValidator.js` and `utils/validators.js` don't exist in a fresh scaffold either — the first form in a project creates them once (shared, not per-view), every form after reuses them.
+- No `frontend/<entrypoint>/views/Login/` exists in a fresh scaffold — it's not a file to go open and copy. Follow the `useFormValidation` + `formRules` + `fieldErrors` + `<span class="*__field-error">` + `*__input--invalid` shape from the Skeleton below instead; once a project's first login/form view exists, treat _that_ as the local reference for the next one.
+- `composables/useFormValidation.js` and `utils/validators.js` don't exist in a fresh scaffold either — the first form in a project creates them once (shared, not per-view), every form after reuses them.
 
 ## Skeleton
 
@@ -40,32 +40,39 @@ export const V = {
 ```
 
 ```js
-// frontend/<entrypoint>/composables/useFormValidator.js
-import { ref } from 'vue';
+// frontend/<entrypoint>/composables/useFormValidation.js
+import { reactive } from 'vue';
 
-export function useFormValidator(model, rules) {
-  const fieldErrors = ref({});
+export function useFormValidation(rules) {
+  const fieldErrors = reactive(Object.fromEntries(Object.keys(rules).map((field) => [field, ''])));
 
-  async function validate(callback) {
-    const errors = {};
+  function validate(formData) {
+    let isValid = true;
 
-    for (const field in rules) {
-      for (const rule of rules[field]) {
-        const message = rule(model[field]);
-        if (message) {
-          errors[field] = message;
+    for (const [field, validators] of Object.entries(rules)) {
+      let error = '';
+
+      for (const validator of validators) {
+        error = validator(formData[field]);
+        if (error) {
           break;
         }
       }
+
+      fieldErrors[field] = error;
+      if (error) {
+        isValid = false;
+      }
     }
 
-    fieldErrors.value = errors;
-    const isValid = Object.keys(errors).length === 0;
-    callback(isValid);
     return isValid;
   }
 
-  return { fieldErrors, validate };
+  function clearError(field) {
+    fieldErrors[field] = '';
+  }
+
+  return { fieldErrors, validate, clearError };
 }
 ```
 
@@ -73,47 +80,47 @@ export function useFormValidator(model, rules) {
 // Index.js
 import { reactive, ref, getCurrentInstance } from 'vue';
 import { V } from '@website/utils/validators.js';
-import { useFormValidator } from '@website/composables/useFormValidator.js';
+import { useFormValidation } from '@website/composables/useFormValidation.js';
 
 export default {
   setup() {
     const { $api } = getCurrentInstance().proxy || {};
     const form = reactive({ email: '', password: '' });
     const isSubmitting = ref(false);
+    const flash = ref(null); // { type: 'success' | 'error', message }
 
     const formRules = {
       email: [V.required('Email is required'), V.email('Enter a valid email address')],
       password: [V.required('Password is required')]
     };
 
-    const { fieldErrors, validate } = useFormValidator(form, formRules);
+    const { fieldErrors, validate, clearError } = useFormValidation(formRules);
 
-    async function save() {
+    async function submit() {
+      flash.value = null;
+
+      if (!validate(form)) {
+        return;
+      }
+
       isSubmitting.value = true;
       try {
         await $api.post('/auth/login', form);
+        flash.value = { type: 'success', message: 'Signed in' };
+      } catch (_err) {
+        flash.value = { type: 'error', message: 'Could not sign in. Please try again.' };
       } finally {
         isSubmitting.value = false;
       }
     }
 
-    async function submit() {
-      await validate((isValid) => {
-        if (isValid) {
-          save();
-          return true;
-        }
-        return false;
-      });
-    }
-
-    return { form, fieldErrors, isSubmitting, submit };
+    return { form, fieldErrors, clearError, isSubmitting, flash, submit };
   }
 };
 ```
 
 ```html
-<form novalidate @submit.prevent>
+<form novalidate @submit.prevent="submit">
   <label class="login__label">
     Email <span class="field-required">*</span>
     <input
@@ -124,22 +131,30 @@ export default {
       :class="{ 'login__input--invalid': fieldErrors.email }"
       :aria-invalid="!!fieldErrors.email"
       :aria-describedby="fieldErrors.email ? 'email-error' : null"
+      @input="clearError('email')"
     />
   </label>
   <span v-if="fieldErrors.email" id="email-error" class="login__field-error"
     >{{ fieldErrors.email }}</span
   >
 
-  <button
-    type="submit"
-    :disabled="isSubmitting"
-    :class="{ 'is-loading': isSubmitting }"
-    @click="submit"
-  >
+  <Transition name="flash">
+    <p
+      v-if="flash"
+      :class="`login__flash login__flash--${flash.type}`"
+      :role="flash.type === 'error' ? 'alert' : 'status'"
+    >
+      {{ flash.message }}
+    </p>
+  </Transition>
+
+  <button type="submit" :disabled="isSubmitting" :class="{ 'is-loading': isSubmitting }">
     Submit
   </button>
 </form>
 ```
+
+Submit failure (`$api` rejects on non-2xx) always surfaces as a flash message — never swallow the error silently. If the project has a UI kit installed (see below), render it with the kit's toast/message component instead of the inline `<p>`.
 
 ## Input types — still required
 
@@ -156,16 +171,17 @@ Canonical rule lives in vulkano-frontend-component § "Installed UI library is n
 ## Microinteractions (required on every submit)
 
 - `loading` state on submit: disabled/`is-loading` button, spinner if the action takes noticeable time.
-- Success/error toast or inline message uses a short transition (~150-250ms), never an instant jump.
+- Success/error flash message (or the UI kit's toast) uses a short transition (~150-250ms), never an instant jump.
+- Full rules (hover, `cursor: pointer`, shared utilities, GSAP/AOS policy): `references/AGENTS/MICROINTERACTIONS.md`.
 
 ## After writing
 
 - Track both outcomes (`{section}_success` / `{section}_error`) per vulkano-frontend-analytics, unless the user opted out for this area.
 - Confirm a11y requirements (labels, `aria-invalid`, `aria-describedby`) per vulkano-frontend-a11y.
-- New/changed `validators.js` rule or `useFormValidator` behavior → test at `test/frontend/<entrypoint>/utils/validators.test.js` / `.../composables/useFormValidator.test.js` per vulkano-testing.
+- New/changed `validators.js` rule or `useFormValidation` behavior → test at `test/frontend/<entrypoint>/utils/validators.test.js` / `test/frontend/<entrypoint>/composables/useFormValidation.test.js` per vulkano-testing.
 - Visually verify in a browser: submit with empty fields, invalid values, and valid values.
 - Run `vp check` and `vp test`.
 
 ## Reference
 
-The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>/views/Login/` to copy from in a fresh scaffold), vulkano-frontend-a11y § Forms for the a11y wiring side. `references/AGENTS/ACCESSIBILITY.md` only points here now — this skill is the source of truth, not a summary of it.
+The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>/views/Login/` to copy from in a fresh scaffold), vulkano-frontend-a11y § Forms for the a11y wiring side. `references/AGENTS/ACCESSIBILITY.md` (accessibility minimums, points to vulkano-frontend-a11y). This skill is the source of truth for form conventions — `references/AGENTS/FRONTEND.md` § Forms only points here.

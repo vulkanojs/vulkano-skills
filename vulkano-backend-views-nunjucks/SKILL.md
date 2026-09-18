@@ -25,7 +25,7 @@ Not for Vue components/views (`frontend/<entrypoint>/views/` — always its own 
 
 - Check `app/config/views.js` — if it sets `engine: 'handlebars'`, stop and switch to the vulkano-backend-views-handlebars skill.
 - Check `app/views/_shared/templates/` for an existing base layout to extend instead of writing a new `<html>` shell.
-- Check whether this view belongs to a public/crawlable area (needs the SEO block) or a CMS/admin area (doesn't) — see PROJECT.md § Project requirements, and `references/AGENTS/ARCHITECTURE.md` § Multiple entry points if the project splits front/CMS.
+- Check whether this view belongs to a public/crawlable area (needs the SEO block) or a CMS/admin area (doesn't) — see PROJECT.md § Project requirements, and `references/AGENTS/ENTRYPOINTS.md` if the project splits front/CMS.
 - Trace the controller action that renders this view — confirm what locals it actually passes (`res.render('x/y.html', { ...locals })`). Don't assume a variable exists in the template; if data is missing, add it in the controller/model, not with a query or fetch from inside the template.
 - Markup repeated across 2+ views → extract to `app/views/_shared/partials/` and `{% include %}` it, instead of duplicating. This applies even when you're adding those 2+ views one at a time in the same task — check back against files you already wrote earlier in the SAME task, not just pre-existing ones. E.g. a branded side-panel/header block copy-pasted into `login.html`, then again into `error.html`, then again into a third view → stop, move it to `_shared/partials/oauth-brand.html` and include it in all three:
   ```html
@@ -164,7 +164,7 @@ Function-call syntax, pipe through `| safe` so the HTML isn't escaped:
 <!-- before </body> -->
 ```
 
-`entry` must match a key in `vite.entries.mjs`'s `entries` map — use the entry name for the area this view belongs to (front vs CMS, see `references/AGENTS/ARCHITECTURE.md` § Multiple entry points).
+`entry` must match a key in `vite.entries.mjs`'s `entries` map — use the entry name for the area this view belongs to (front vs CMS, see `references/AGENTS/ENTRYPOINTS.md`).
 
 ## After writing
 
@@ -179,4 +179,4 @@ Report: view file(s) created/changed, controller-action it's rendered from, layo
 
 ## Reference
 
-`references/AGENTS/SEO.md`, `references/AGENTS/ARCHITECTURE.md` (§ Multiple entry points), `references/AGENTS/ACCESSIBILITY.md`, `app/views/_shared/templates/default.html` (reference layout), `app/config/views.js` (engine override, if present), `node_modules/@vulkano/core/bootstrap/engines/nunjucks.js` (globals/filters/helpers wiring), `node_modules/@vulkano/core/views/helpers/vite.js` and `views/helpers/t.js` (built-in helper implementations), `node_modules/@vulkano/core/examples/config/views/config.js` (engine override template), `node_modules/@vulkano/core/examples/config/views/helpers/strpad.js` and `examples/config/views/filters/example.js` (custom helper/filter templates).
+`references/AGENTS/SEO.md`, `references/AGENTS/ENTRYPOINTS.md`, `references/AGENTS/ACCESSIBILITY.md`, `app/views/_shared/templates/default.html` (reference layout), `app/config/views.js` (engine override, if present), `node_modules/@vulkano/core/bootstrap/engines/nunjucks.js` (globals/filters/helpers wiring), `node_modules/@vulkano/core/views/helpers/vite.js` and `views/helpers/t.js` (built-in helper implementations), `node_modules/@vulkano/core/examples/config/views/config.js` (engine override template), `node_modules/@vulkano/core/examples/config/views/helpers/strpad.js` and `examples/config/views/filters/example.js` (custom helper/filter templates).

@@ -61,4 +61,4 @@ Block name = component/view folder in kebab-case. No reaching into a child block
 
 ## Reference
 
-`references/AGENTS/FRONTEND.md` § Responsive grid system (same grid detail as this skill). Project-level overrides (layout system, UI kit): `PROJECT.md` § Frontend conventions.
+`references/AGENTS/CSS.md` (same grid detail as this skill, plus CSS unit and `rem` rules). Project-level overrides (layout system, UI kit): `PROJECT.md` § Frontend conventions.
