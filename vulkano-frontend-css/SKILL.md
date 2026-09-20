@@ -38,6 +38,23 @@ Default: Foundation-style responsive grid, built on CSS Grid, imported once per 
 - Nesting: any `.column` can also carry `.row` to nest a grid inside it — no special helper needed.
 - No offset/push-pull classes (not needed yet — add only when a task requires them).
 
+## Units — whole-pixel `rem` only
+
+Allowed units: `rem`, `px`, `dvh`, `vw`, `%`. Never `em`, `vh` (use `dvh`), or `ch`.
+
+A `rem` value is valid only if `value × 16` is a whole number of pixels (16px root). Check every `rem` you write:
+
+| px  | rem         | px  | rem        | px  | rem      |
+| --- | ----------- | --- | ---------- | --- | -------- |
+| 1   | `0.0625rem` | 12  | `0.75rem`  | 24  | `1.5rem` |
+| 2   | `0.125rem`  | 14  | `0.875rem` | 32  | `2rem`   |
+| 4   | `0.25rem`   | 16  | `1rem`     | 40  | `2.5rem` |
+| 6   | `0.375rem`  | 18  | `1.125rem` | 48  | `3rem`   |
+| 8   | `0.5rem`    | 20  | `1.25rem`  | 64  | `4rem`   |
+| 10  | `0.625rem`  | 22  | `1.375rem` | 80  | `5rem`   |
+
+Wrong: `0.4rem` (6.4px), `0.9rem` (14.4px), `0.35rem` (5.6px), `1.1rem` (17.6px). Right: `0.375rem`, `0.875rem`, `0.375rem`, `1.125rem`. Pick the nearest row of the table instead of computing.
+
 ## Styling — BEM
 
 ```scss
@@ -57,8 +74,9 @@ Block name = component/view folder in kebab-case. No reaching into a child block
 ## After writing
 
 - New component's `_index.scss` → add its `@import './X/_index.scss';` line to the parent `_index.scss` aggregator (see vulkano-frontend-component § File & naming).
+- Scan the `rem` values you wrote against the table above; any decimal-pixel value is a bug.
 - Run `vp check` and `vp test`.
 
 ## Reference
 
-`references/AGENTS/CSS.md` (same grid detail as this skill, plus CSS unit and `rem` rules). Project-level overrides (layout system, UI kit): `PROJECT.md` § Frontend conventions.
+`references/AGENTS/CSS.md` (same grid detail and unit rules as this skill). Project-level overrides (layout system, UI kit): `PROJECT.md` § Frontend conventions.

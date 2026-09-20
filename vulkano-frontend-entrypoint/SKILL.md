@@ -111,6 +111,13 @@ Every new entrypoint is a new "area" per PROJECT.md § Project requirements. Bef
 
 ## After writing
 
+Vue entrypoint — do not report done until every box is true (a missing one is the most common miss: the new area works at its root URL but a hard refresh on any deeper URL returns an error):
+
+- [ ] Scoped backend catch-all `'/<name>/*': '<Name>Controller.get'` is **uncommented/added** in `app/config/routes.js`, above the generic `'/*'` (also when the area has a single route today).
+- [ ] `frontend/<name>/routes.js` has `{ path: '/:pathMatch(.*)*', component: NotFound }` with a `views/NotFound/Index.vue` (backend catch-all and frontend NotFound always ship together).
+- [ ] `createWebHistory('/<name>')` in `app.js`.
+- [ ] `curl -i localhost:<PORT>/<name>` and `curl -i localhost:<PORT>/<name>/anything` both return the app shell (200).
+
 - Confirm the new key was added to `vite.entries.mjs` — its `@<name>` alias and `rollupOptions.input`/`environments` entry in `vite.config.mjs` both derive from it automatically, nothing else to edit.
 - Run `vp build` and confirm the new entry appears in `public/.vite/manifest.json` — each entry builds as its own isolated Rolldown pass (Vite's Environment API, see `vite.config.mjs`) so it never shares a chunk with another entry, then all entries' manifests merge into that one file.
 - Vue entrypoint: hit the new area's path in a browser; confirm a hard refresh doesn't 404 (catch-all working, not just in-app navigation) AND the view actually renders — a 200 with a blank page is the tell for a missing/wrong `createWebHistory(base)` (see Router base path above), not a catch-all problem.

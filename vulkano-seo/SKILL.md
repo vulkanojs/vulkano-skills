@@ -85,6 +85,8 @@ For every new/changed crawlable view, required unless the user opted out for tha
 - [ ] Unique `title` (route override or default).
 - [ ] Unique `description`.
 - [ ] `image` set for `og:image`/`twitter:image`.
+- [ ] `public/sitemap.xml` lists the new URL (create the file if it does not exist).
+- [ ] HTTP test under `test/app/controllers/*.http.test.js` asserts the page's `<title>` and description.
 
 Don't skip silently — ask the user whether the shared default is acceptable or a page-specific one is needed. Run `vp check` and `vp test`.
 

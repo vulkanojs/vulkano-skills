@@ -67,8 +67,11 @@ On successful login, set the JWT as an `httpOnly` (and `secure` in production) c
 
 ## After writing
 
+Do not report done until every `[ ]` below is true:
+
 - Confirm no endpoint response ever returns a password hash or the raw token in its JSON body (`res.vsr` payload) — strip/select fields explicitly (see AGENTS.md § Security considerations).
-- Add a test under `test/app/controllers/AuthController.http.test.js` covering login success/failure, logout, and `current` with/without a valid session.
+- [ ] **Auth test exists** at `test/app/controllers/AuthController.http.test.js` covering login success/failure, logout, and `current` with/without a valid session. Not optional: do not report done without it, and list its path in the handoff.
+- [ ] `JWT_SECRET_KEY` is set (non-empty) in `.env` — an empty key makes login fail with a 500.
 - Run `vp check` and `vp test`.
 
 ## Reference
