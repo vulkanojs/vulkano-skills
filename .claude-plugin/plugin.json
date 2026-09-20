@@ -12,10 +12,13 @@
     "./vulkano-frontend-a11y",
     "./vulkano-frontend-analytics",
     "./vulkano-frontend-component",
+    "./vulkano-frontend-css",
     "./vulkano-frontend-entrypoint",
     "./vulkano-frontend-form",
     "./vulkano-frontend-router",
+    "./vulkano-frontend-store",
     "./vulkano-seo",
+    "./vulkano-template-update",
     "./vulkano-testing"
   ]
 }
