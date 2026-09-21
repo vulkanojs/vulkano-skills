@@ -72,7 +72,9 @@ Whenever a task adds analytics/tracking while the project is still in this defau
 ## Sitemap and robots
 
 - `public/robots.txt` — allow public backend views, disallow the SPA app-shell prefix (nothing to index there). Starts `Disallow: /` per private mode above.
-- `public/sitemap.xml` — static file for a fixed page set; generate from a controller/service when data-driven (blog posts, products).
+- `public/sitemap.xml` — static file for a fixed page set; generate from a controller/service when data-driven (blog posts, products). Create it (or add the URL to it) for every new crawlable view — never skip it for lacking a domain, and never skip it because the project is still in the noindex/private-mode default (above): the sitemap ships ready for when the site goes public, it doesn't gate on being indexable today.
+  - URLs need an absolute base. Recommended: an optional `SITE_URL` var in `.env` (e.g. `SITE_URL=https://example.com`), read as `process.env.SITE_URL`. Not project-required — check `.env`/`.env.example` first; if this project already has an equivalent (e.g. `APP_URL`), reuse that instead of adding a second one.
+  - `SITE_URL` unset → fall back to relative URLs (`/about` instead of `https://example.com/about`); note in the handoff that absolute URLs need `SITE_URL` set (or the domain) before launch. Same fallback for any `Sitemap:` line in `robots.txt`.
 
 ## Structured data
 
