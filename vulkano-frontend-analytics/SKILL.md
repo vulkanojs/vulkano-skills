@@ -70,7 +70,6 @@ New projects default to `SEO_NOINDEX=true` (private/noindex). Tracking still fir
 - Confirm the area's Analytics column (PROJECT.md § Project requirements table) isn't "off" before adding anything.
 - Surface the custom-dimension and private-mode warnings when they apply — don't skip silently.
 - Verify the event actually fires: check the browser Network tab (request to `google-analytics.com`/`analytics.google.com`) or GA4 DebugView, for both outcomes on a form (`{section}_success` and `{section}_error`). Wiring the `event(...)` call is not enough — confirm the request leaves the browser with the right name/params.
-- Run `vp check` and `vp test`.
 
 ## Reference
 

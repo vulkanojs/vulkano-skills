@@ -180,7 +180,6 @@ Canonical rule lives in vulkano-frontend-component § "Installed UI library is n
 - Confirm a11y requirements (labels, `aria-invalid`, `aria-describedby`) per vulkano-frontend-a11y.
 - New/changed `validators.js` rule or `useFormValidation` behavior → test at `test/frontend/<entrypoint>/utils/validators.test.js` / `test/frontend/<entrypoint>/composables/useFormValidation.test.js` per vulkano-testing.
 - Visually verify in a browser: submit with empty fields, invalid values, and valid values.
-- Run `vp check` and `vp test`.
 
 ## Reference
 

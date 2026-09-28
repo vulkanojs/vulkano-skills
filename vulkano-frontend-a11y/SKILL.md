@@ -104,7 +104,6 @@ Text sits next to the box either way, so wrapping instead of `for`/`id` skips a 
 ## After writing
 
 - Visually verify with a screen reader or the browser's accessibility tree inspector when the change is non-trivial (custom widget, dropdown).
-- Run `vp check` and `vp test`.
 
 ## Reference
 

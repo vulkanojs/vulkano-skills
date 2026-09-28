@@ -182,7 +182,6 @@ router.beforeEach(async (to) => {
 
 - Confirm the backend `/*` catch-all still exists if this is the first route added to a fresh project.
 - Test hard-refresh on the new route, not just in-app navigation.
-- Run `vp check` and `vp test`.
 
 ## Reference
 

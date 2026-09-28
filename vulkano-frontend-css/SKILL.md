@@ -75,7 +75,6 @@ Block name = component/view folder in kebab-case. No reaching into a child block
 
 - New component's `_index.scss` → add its `@import './X/_index.scss';` line to the parent `_index.scss` aggregator (see vulkano-frontend-component § File & naming).
 - Scan the `rem` values you wrote against the table above; any decimal-pixel value is a bug.
-- Run `vp check` and `vp test`.
 
 ## Reference
 

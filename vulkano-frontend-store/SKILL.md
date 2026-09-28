@@ -79,7 +79,6 @@ export const useAppStore = defineStore('app', () => {
 ## After writing
 
 - New store → test at `test/frontend/<entrypoint>/store/use<Entity>Store.test.js` (`createPinia()` + `setActivePinia()` in `beforeEach`, mock `$api` at the store boundary — never hit real network). Full pattern table: vulkano-testing skill.
-- Run `vp check` and `vp test`.
 
 ## Reference
 

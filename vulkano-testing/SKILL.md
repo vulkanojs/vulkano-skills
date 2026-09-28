@@ -83,7 +83,6 @@ No Playwright/Cypress installed. For end-to-end verification of a user flow, dri
 
 ## After writing
 
-- Run `vp check` and `vp test` before considering the change done.
 - New model/controller/service/middleware with no test yet → write one now, don't defer.
 
 ## Reference

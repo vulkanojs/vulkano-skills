@@ -122,7 +122,6 @@ Vue entrypoint — do not report done until every box is true (a missing one is 
 - Run `vp build` and confirm the new entry appears in `public/.vite/manifest.json` — each entry builds as its own isolated Rolldown pass (Vite's Environment API, see `vite.config.mjs`) so it never shares a chunk with another entry, then all entries' manifests merge into that one file.
 - Vue entrypoint: hit the new area's path in a browser; confirm a hard refresh doesn't 404 (catch-all working, not just in-app navigation) AND the view actually renders — a 200 with a blank page is the tell for a missing/wrong `createWebHistory(base)` (see Router base path above), not a catch-all problem.
 - Vanilla-JS entrypoint: confirm the bundle actually loads on the rendered page (Network tab) and, in dev, that editing `app.js` HMR-updates without a full page reload — no catch-all/router check needed, it's not a client-routed app.
-- Run `vp check` and `vp test`.
 
 ## Reference
 

@@ -164,7 +164,6 @@ Handler signature is always `({ socket, body }, callback)`. Requires `app/config
 ## After writing
 
 - New/changed controller → add a test under `test/app/controllers/*.http.test.js` (see TESTING.md). API controllers assert the `res.vsr` envelope (`{ success, statusCode, data }`); view controllers assert the rendered HTML body.
-- Run `vp check` and `vp test`.
 - Never `require()` a model or service — both are auto-loaded globals, reference by name (`Product`, `Upload`, ...).
 - New public/crawlable view → apply SEO essentials (`references/AGENTS/SEO.md`) unless that area's SEO column is off (see PROJECT.md § Project requirements).
 

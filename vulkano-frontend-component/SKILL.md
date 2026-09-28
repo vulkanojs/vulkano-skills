@@ -142,7 +142,6 @@ CSS Grid only (never Flexbox), the responsive grid system (`.row`/`.column`), an
 - New/edited store → see vulkano-frontend-store § After writing.
 - Check analytics (vulkano-frontend-analytics) and accessibility (vulkano-frontend-a11y) requirements for the area before considering done.
 - Visually verify in a browser per `references/AGENTS/DEVTOOLS.md`.
-- Run `vp check` and `vp test`.
 
 ## Reference
 
