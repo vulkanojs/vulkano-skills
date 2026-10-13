@@ -22,7 +22,7 @@ Not for component file layout — see vulkano-frontend-component.
 - Validation runs through `const { fieldErrors, validate, clearError } = useFormValidation(formRules)` and `validate(form)` — synchronous, returns a boolean (see Skeleton). Never native `required`/`:invalid` UI.
 - `formRules` is a plain object: `{ email: [V.required('...'), V.email('...')] }` — each entry an array of validator functions from `frontend/<entrypoint>/utils/validators.js` (`V.required(message)`, `V.email(message)`, ...), checked in order, first failing rule wins.
 - `fieldErrors` is the reactive object returned by `useFormValidation` — never re-declared locally.
-- Every required field's label gets a red asterisk: reuse a shared `.field-required` (or equivalent BEM element) styled with the project's danger/error color token — never hardcode a hex/named red per view. Token name and scale (`--color-danger`, `--color-danger-500`, `--color-error`, whatever this project's own theme uses) is a project decision, not a framework-fixed name — check for an existing one first. **Neither the class nor a danger/error token exists in a fresh scaffold** (checked: no `frontend/**/*.scss` defines one) — the first form in a project defines both once, in a shared partial (e.g. `frontend/<entrypoint>/scss/_tokens.scss`, imported from `style.scss`), and every form after that reuses them.
+- Every required field's label gets a red asterisk: reuse a shared `.field-required` (or equivalent BEM element) — both ship in the template: `.field-required` in `scss/_base.scss`, colored with `var(--color-danger)` from `scss/_tokens.scss`. Never hardcode a red per view.
 - Error message rendered inline below the input: `<span class="*__field-error">{{ fieldErrors.email }}</span>`.
 - Invalid input gets a `*__input--invalid` class for the red border.
 - Required inputs keep the native `required` attribute even though `novalidate` suppresses its browser UI — not redundant with `V.required(...)` in `formRules`: it stays for the accessibility tree, gives a quick visual signal in devtools without opening `formRules`, and a mismatch between the two (required in markup but not in rules, or vice versa) is a bug worth catching.
@@ -166,7 +166,7 @@ Canonical rule lives in vulkano-frontend-component § "Installed UI library is n
 
 ## Date fields
 
-`type="date"`'s native picker can't be restyled and varies by browser/OS. Check the UI reference page first per the rule above (the installed library's date-picker if already installed and documented there — e.g. a shadcn-vue `calendar`+`popover` combo or Element Plus's `<el-date-picker>`). If nothing exists yet: `type="date"` is acceptable for low-stakes internal forms and forms not yet carrying the redesign; a view already carrying the redesign should install a date-picker from whichever library this project uses instead — call out the install explicitly, and add it to the UI reference page.
+`type="date"`'s native picker can't be restyled and varies by browser/OS. Check the design system page first per the rule above (the installed library's date-picker if already installed and documented there — e.g. a shadcn-vue `calendar`+`popover` combo or Element Plus's `<el-date-picker>`). If nothing exists yet: `type="date"` is acceptable for low-stakes internal forms and forms not yet carrying the redesign; a view already carrying the redesign should install a date-picker from whichever library this project uses instead — call out the install explicitly, and add it to the design system page.
 
 ## Microinteractions (required on every submit)
 

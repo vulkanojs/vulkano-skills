@@ -21,7 +21,7 @@ Not for form validation UI — see vulkano-frontend-form. Not for route/auth-gua
 
 - Composition API only (`setup()`, `ref`/`reactive`, composables) — never add `data()`/`methods`/`created()` options blocks.
 - Decide `views/` (top-level route-driven state) vs `components/` (reusable, imported by views/other components).
-- Check the UI reference page (see below) first — it's the reuse source of truth, faster and more reliable than grepping `frontend/<entrypoint>/components/`.
+- Check the design system page (see below) first — it's the reuse source of truth, faster and more reliable than grepping `frontend/<entrypoint>/components/`.
 - Check for an existing similar view/component — mirror its file layout instead of inventing a new one.
 - Form fields especially: check if a reusable input component already exists project-wide (Datepicker, Textarea, Select, etc.) before adding a raw `<input>`/`<textarea>`. If site/CMS already uses one (e.g. Datepicker instead of `<input type="date">`), reuse it — copy its exact component/placement pattern, don't invent a new one.
 
@@ -94,32 +94,32 @@ Never `src="@website/..."`/`src="@admin/..."`, a relative `import`, or any other
 
 `/img/`, `/fonts/`, `/files/` — never `public/` in the path, never through an entrypoint alias (`@website`, `@admin`). See `references/AGENTS/FRONTEND.md` § Assets for namespacing and `.webp` optimization.
 
-## UI reference page
+## design system page
 
-Every entrypoint keeps a dev-only UI reference view — `frontend/<entrypoint>/views/UI/Index.vue`, route `/ui` — listing every reusable component with a live usage example and its props/slots. This page is the reuse source of truth: check it before writing a new component or raw form field, so nothing gets reinvented that already exists.
+Every entrypoint keeps a dev-only design system view — `frontend/<entrypoint>/views/DesignSystem/Index.vue`, route `/design-system` — listing every reusable component with a live usage example and its props/slots. This page is the reuse source of truth: check it before writing a new component or raw form field, so nothing gets reinvented that already exists.
 
 Two kinds of components live behind it, both get an entry:
 
 - **Custom components** (Datepicker, Textarea, Select, Modal, Button, etc.) — code lives in `components/<Name>/`.
 - **Vendored UI-library components** (shadcn-vue, Element Plus) — code lives in `components/ui/`.
 
-`components/` (and `components/ui/`) hold the code; `views/UI/Index.vue` holds nothing but examples — it never re-implements a component, only imports and demonstrates it.
+`components/` (and `components/ui/`) hold the code; `views/DesignSystem/Index.vue` holds nothing but examples — it never re-implements a component, only imports and demonstrates it.
 
-- Not built yet in a fresh scaffold — the first reusable component in an entrypoint creates the page; every reusable component after adds itself to it.
+- Ships in the template as the entrypoint's design system page (tokens, typography, spacing, base components, grid); every reusable component adds its own section to it.
 
 ## Installed UI library is not optional — check `package.json` before native HTML
 
 The library itself isn't fixed by this framework — `PROJECT.md` § Frontend conventions decides shadcn-vue, Element Plus, PrimeVue, or any other. Blank/not set there → no UI library installed, check `package.json` the long way below. The rule is library-agnostic: **whichever one this project has installed, every input, button, dialog, and confirm/alert MUST go through it, not raw HTML5 or a native browser dialog.** Fall back to plain HTML5 only for a component that specific library genuinely doesn't provide.
 
-Detect which one before assuming none is installed — check `package.json` dependencies and, for CLI-scaffolded kits, their own marker file (e.g. shadcn-vue's `components.json` at repo root, always created by `shadcn-vue init` regardless of which underlying primitives library it pulled that version — `reka-ui` today, `radix-vue` in older setups — don't grep for a specific peer-dep name, it drifts). An empty/missing entry in `views/UI/Index.vue` is not license to fall back — it means the component hasn't been added to this project yet:
+Detect which one before assuming none is installed — check `package.json` dependencies and, for CLI-scaffolded kits, their own marker file (e.g. shadcn-vue's `components.json` at repo root, always created by `shadcn-vue init` regardless of which underlying primitives library it pulled that version — `reka-ui` today, `radix-vue` in older setups — don't grep for a specific peer-dep name, it drifts). An empty/missing entry in `views/DesignSystem/Index.vue` is not license to fall back — it means the component hasn't been added to this project yet:
 
-1. Check `views/UI/Index.vue` for an existing usage example — copy it verbatim if found.
+1. Check `views/DesignSystem/Index.vue` for an existing usage example — copy it verbatim if found.
 2. If the kit is installed but this component isn't in the reference page yet: add it now (the kit's own way to pull a component — a CLI add command, an already-imported global component, etc.), then add its usage example to the reference page. Expected first-use cost, not an edge case to route around.
 3. Only fall back to plain HTML5/native browser UI when no UI library is installed at all, or the installed one has no equivalent for this component — say so explicitly in the response (e.g. "No hay librería UI instalada, usé `<input type=\"date\">` nativo"). Never fall back silently, and never fall back just because the reference page happened to be empty.
 
 **`window.confirm`/`window.alert`/`window.prompt` are always off-limits** for user-facing confirmation or messaging (delete confirmations, save feedback, etc.) — native dialogs block the main thread and can't be styled, same reason native form-validation UI is banned (see vulkano-frontend-form). Use the installed library's own confirm/message components (e.g. shadcn-vue → `AlertDialog` + `Sonner`/`Toast`; Element Plus → `ElMessageBox.confirm(...)` + `ElMessage`/`ElNotification`; another kit → its equivalent). No UI library installed at all → build one minimal reusable confirm-modal/toast component (shared, not per-view) instead of reaching for `window.confirm`.
 
-- Guard the route (dev/local only, or behind admin auth) — it's a build tool, never a public/indexed page. No SEO, no analytics.
+- The route is registered only when `import.meta.env.DEV` (see the entrypoint's `routes.js`) — production builds don't include it.
 - One section per component: name, short description, a rendered live instance, and the exact `<template>` snippet to copy-paste (props included) — mirror that snippet verbatim when reusing, don't improvise a variant.
 - Keep entries flat, one per component — no nested taxonomy needed for this.
 
@@ -138,7 +138,7 @@ CSS Grid only (never Flexbox), the responsive grid system (`.row`/`.column`), an
 ## After writing
 
 - Add the component's `@import './X/_index.scss';` line to the parent `_index.scss` aggregator.
-- New reusable component → add its section to the UI reference page (`frontend/<entrypoint>/views/UI/Index.vue`).
+- New reusable component → add its section to the design system page (`frontend/<entrypoint>/views/DesignSystem/Index.vue`).
 - New/edited store → see vulkano-frontend-store § After writing.
 - Visually verify in a browser per `references/AGENTS/DEVTOOLS.md`.
 

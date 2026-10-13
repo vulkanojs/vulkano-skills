@@ -73,6 +73,7 @@ Block name = component/view folder in kebab-case. No reaching into a child block
 
 ## After writing
 
+- Colors, font sizes, spacing and radii come from `var(--token)` (`scss/_tokens.scss`) — a raw hex or size is a bug; add a missing token there (and to `views/DesignSystem/Index.js`) instead.
 - New component's `_index.scss` → add its `@import './X/_index.scss';` line to the parent `_index.scss` aggregator (see vulkano-frontend-component § File & naming).
 - Scan the `rem` values you wrote against the table above; any decimal-pixel value is a bug.
 
