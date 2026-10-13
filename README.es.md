@@ -2,7 +2,7 @@
 
 Skills de Claude Code para proyectos construidos sobre el Vulkano Framework (stack Express + Mongoose + Vue 3, backend/frontend). Pensado para consumirse como submódulo git, así todos los proyectos Vulkano comparten las mismas convenciones y las actualizaciones salen desde un solo lugar.
 
-## Qué hay acá
+## Qué hay aquí
 
 Cada carpeta en la raíz del repo es un skill de Claude Code autocontenido (`SKILL.md` con frontmatter `name`/`description`). Cubren las convenciones backend y frontend del framework:
 
@@ -22,7 +22,7 @@ Cada carpeta en la raíz del repo es un skill de Claude Code autocontenido (`SKI
 
 ## Usar este repo como submódulo
 
-Agregalo a un proyecto Vulkano bajo `.claude/skills/`:
+Agrégalo a un proyecto Vulkano bajo `.claude/skills/`:
 
 ```bash
 git submodule add https://github.com/vulkanojs/vulkano-skills.git .claude/skills/vulkano-skills
@@ -39,13 +39,13 @@ git submodule update --remote --merge .claude/skills/vulkano-skills
 
 ## Skills vs `references/AGENTS/*.md`
 
-Sin duplicación: `references/AGENTS/*.md` del proyecto (ARCHITECTURE, BACKEND, FRONTEND, BUILD…) guarda las reglas cortas; las skills de acá guardan el código de ejemplo y el paso a paso. Una skill enlaza al doc de reglas en vez de repetirlo. Si este submódulo no está instalado, el fallback es `AGENTS.md` § Minimum rules del proyecto.
+Sin duplicación: `references/AGENTS/*.md` del proyecto (ARCHITECTURE, BACKEND, FRONTEND, BUILD…) guarda las reglas cortas; las skills de este repo guardan el código de ejemplo y el paso a paso. Una skill enlaza al doc de reglas en vez de repetirlo. Si este submódulo no está instalado, las reglas de `references/AGENTS/*.md` del proyecto bastan por sí solas.
 
 ## Agregar o editar un skill
 
-1. Editá el `<nombre>/SKILL.md` correspondiente acá, en este repo — no dentro del checkout del submódulo en un proyecto (cambios ahí quedan locales a ese checkout hasta pushearlos acá y traerlos de vuelta).
-2. Commiteá y pusheá acá.
-3. En cada proyecto que lo consume, corré `git submodule update --remote --merge` y commiteá el puntero de submódulo actualizado.
+1. Edita el `<nombre>/SKILL.md` correspondiente aquí, en este repo — no dentro del checkout del submódulo en un proyecto (los cambios ahí quedan locales a ese checkout hasta que les hagas push aquí y los traigas de vuelta).
+2. Haz commit y push aquí.
+3. En cada proyecto que lo consume, ejecuta `git submodule update --remote --merge` y haz commit del puntero del submódulo actualizado.
 
 ## Licencia
 

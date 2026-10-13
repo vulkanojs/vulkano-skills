@@ -39,7 +39,7 @@ git submodule update --remote --merge .claude/skills/vulkano-skills
 
 ## Skills vs `references/AGENTS/*.md`
 
-No duplication: a consuming project's `references/AGENTS/*.md` (ARCHITECTURE, BACKEND, FRONTEND, BUILD…) holds the short rules; the skills here hold the worked code and step-by-step how-to. A skill links to the rule doc instead of restating it. If this submodule isn't installed, the project's `AGENTS.md` § Minimum rules is the fallback.
+No duplication: a consuming project's `references/AGENTS/*.md` (ARCHITECTURE, BACKEND, FRONTEND, BUILD…) holds the short rules; the skills here hold the worked code and step-by-step how-to. A skill links to the rule doc instead of restating it. If this submodule isn't installed, the project's `references/AGENTS/*.md` rules are enough on their own.
 
 ## Adding or editing a skill
 
