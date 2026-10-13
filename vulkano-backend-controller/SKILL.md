@@ -139,6 +139,29 @@ module.exports = {
 
 The `Order` model above needs no code at all for this — `getAll(props)`, `get<ModelName>(id, props)`, `create(data)`, `update(id, data)`, `delete(id)`, and `_buildPopulate` are all mixed into every model automatically by the core's scaffold layer (`database/scaffold.js`), including `?populate=` support. A model only needs to hand-write these if it's NOT using the scaffold shortcut, or wants to override one of them — see vulkano-backend-model.
 
+- Subdocument routes (embedded array fields) — opt-in `subdocs`, off by default:
+
+```js
+// app/controllers/api/ProductsController.js
+module.exports = {
+  scaffold: 'Product',
+  allowedMethods: ['get', 'post', 'put', 'patch', 'delete'],
+  subdocs: ['lines', { reviews: ['GET', 'POST'] }]
+  // 'lines'  → Product.attributes.lines is an array of subdocuments, every method allowed
+  // reviews  → only GET/POST registered for this key
+};
+```
+
+| Method   | Path                            | Model call     |
+| -------- | ------------------------------- | -------------- |
+| `POST`   | `/api/products/:id/:key`        | `createSubdoc` |
+| `GET`    | `/api/products/:id/:key`        | `getByField`   |
+| `GET`    | `/api/products/:id/:key/:subId` | `getSubdoc`    |
+| `PUT`    | `/api/products/:id/:key/:subId` | `updateSubdoc` |
+| `DELETE` | `/api/products/:id/:key/:subId` | `removeSubdoc` |
+
+A `:key` not listed in `subdocs` → 404; a method not listed for that key → 405. Independent from `allowedMethods`.
+
 ## Sockets
 
 1. Register the event in `app/config/sockets/events.js`:
