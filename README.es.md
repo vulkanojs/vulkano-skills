@@ -10,8 +10,7 @@ Cada carpeta en la raíz del repo es un skill de Claude Code autocontenido (`SKI
 - `vulkano-backend-controller` — cableado de rutas, convención verbo HTTP a method-key, `res.vsr`/`res.render`, eventos socket.
 - `vulkano-backend-model` — convenciones de schema Mongoose, CRUD, hooks, autopopulate.
 - `vulkano-backend-views` — decidir entre vista HTML server-rendered vs respuesta JSON API.
-- `vulkano-backend-views-handlebars` — layouts/partials/helpers Handlebars.
-- `vulkano-backend-views-nunjucks` — layouts/partials/filters Nunjucks (motor por defecto).
+- `vulkano-backend-templates` — layouts, partials, helpers/filters e inyección Vite para Nunjucks (por defecto) / Handlebars.
 - `vulkano-frontend-component` — separación de archivos componente/vista Vue, Composition API, kit de UI instalado.
 - `vulkano-frontend-css` — layout CSS Grid, sistema de grid responsive, naming BEM.
 - `vulkano-frontend-entrypoint` — scaffold de nuevo entrypoint, app Vue o bundle JS vanilla para página server-rendered (CMS/admin, app adicional).

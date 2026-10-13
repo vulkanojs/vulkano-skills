@@ -10,8 +10,7 @@ Each folder at the repo root is a self-contained Claude Code skill (`SKILL.md` w
 - `vulkano-backend-controller` — route wiring, HTTP-verb-to-method-key convention, `res.vsr`/`res.render`, socket events.
 - `vulkano-backend-model` — Mongoose schema/CRUD/hooks/autopopulate conventions.
 - `vulkano-backend-views` — choosing server-rendered HTML vs JSON API response.
-- `vulkano-backend-views-handlebars` — Handlebars layouts/partials/helpers.
-- `vulkano-backend-views-nunjucks` — Nunjucks layouts/partials/filters (default engine).
+- `vulkano-backend-templates` — Nunjucks (default) / Handlebars layouts, partials, helpers/filters, Vite injection.
 - `vulkano-frontend-component` — Vue component/view file splitting, Composition API, installed UI kit.
 - `vulkano-frontend-css` — CSS Grid layout, responsive grid system, BEM naming.
 - `vulkano-frontend-entrypoint` — scaffolding a new entrypoint, Vue app or vanilla-JS bundle for a server-rendered page (CMS/admin, extra app).

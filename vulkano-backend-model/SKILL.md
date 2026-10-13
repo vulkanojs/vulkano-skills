@@ -84,7 +84,7 @@ The hand-written methods above are the technique to follow when a model needs it
 
 ## `getAll(props)` resolves to one of TWO different shapes — depends on `props.page`
 
-Canonical rule — referenced (not repeated in full) by vulkano-backend-views-handlebars and vulkano-backend-views-nunjucks.
+Canonical rule — referenced (not repeated in full) by vulkano-backend-templates.
 
 Source: `Paginate.get` in `node_modules/@vulkano/core/libs/Paginate.js`:
 

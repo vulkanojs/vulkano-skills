@@ -91,7 +91,7 @@ Required for any non-root entrypoint: `createWebHistory()` defaults to base `/`,
 
 ## Vanilla-JS entrypoint (server-rendered page, no Vue SPA)
 
-For an area that's fully server-rendered (see vulkano-backend-views-handlebars/-nunjucks) and only needs some compiled/bundled JS — a bit of interactivity, a third-party widget init, progressive enhancement — not a client-routed app:
+For an area that's fully server-rendered (see vulkano-backend-templates) and only needs some compiled/bundled JS — a bit of interactivity, a third-party widget init, progressive enhancement — not a client-routed app:
 
 ```
 frontend/<name>/

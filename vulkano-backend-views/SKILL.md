@@ -1,6 +1,6 @@
 ---
 name: vulkano-backend-views
-description: Use when deciding how a controller action in this Vulkano framework project should respond to a request — a server-rendered HTML view (res.render) vs a JSON API response (res.vsr) — and, for the HTML case, which template-engine skill (Nunjucks or Handlebars) to follow.
+description: Use when deciding how a controller action in this Vulkano framework project should respond to a request — a server-rendered HTML view (res.render) vs a JSON API response (res.vsr) — and, for the HTML case, then vulkano-backend-templates for the template itself.
 ---
 
 # Backend Views (dispatcher)
@@ -14,7 +14,7 @@ A controller action produces one of two response shapes — pick based on what's
 
 If the answer is `res.vsr`, stop here — go to vulkano-backend-controller, nothing template-related applies.
 
-If the answer is `res.render`, the actual template syntax (layout inheritance, partials, SEO locals, i18n, formatting helpers, Vite injection) depends on which engine the project uses — this skill doesn't teach that itself, it routes to the skill that does.
+If the answer is `res.render`, the actual template syntax (layout inheritance, partials, SEO locals, i18n, formatting helpers, Vite injection) depends on which engine the project uses — this skill doesn't teach that itself, it routes to vulkano-backend-templates.
 
 ## What you can build under `app/views/`
 
@@ -23,19 +23,19 @@ If the answer is `res.render`, the actual template syntax (layout inheritance, p
 - **Error pages** (`_shared/errors/`) — 404/500 templates.
 - **Views** (`<resource>/*.html`) — the actual page rendered per controller action.
 
-Same four concepts in both engines — only the include/extend syntax differs. Go to the engine skill (below) for how to build each one.
+Same four concepts in both engines — only the include/extend syntax differs. vulkano-backend-templates shows how to build each one.
 
 ## Which engine?
 
 Check `app/config/views.js`:
 
-| `app/config/views.js`  | Engine                  | Skill to use                     |
-| ---------------------- | ----------------------- | -------------------------------- |
-| absent                 | Nunjucks (core default) | vulkano-backend-views-nunjucks   |
-| `engine: 'nunjucks'`   | Nunjucks                | vulkano-backend-views-nunjucks   |
-| `engine: 'handlebars'` | Handlebars              | vulkano-backend-views-handlebars |
+| `app/config/views.js`  | Engine                  |
+| ---------------------- | ----------------------- |
+| absent                 | Nunjucks (core default) |
+| `engine: 'nunjucks'`   | Nunjucks                |
+| `engine: 'handlebars'` | Handlebars              |
 
-Both engine skills cover the same ground (file placement/naming, layout, `res.render` wiring, SEO meta, i18n, custom formatting helpers, Vite injection) for their own syntax — pick one, don't read both for a single view.
+Template syntax for both (layout, partials, SEO meta, i18n, formatting helpers, Vite injection): vulkano-backend-templates.
 
 ## Rendering HTML outside the request/response cycle (PDF, email)
 
@@ -53,4 +53,4 @@ Not a response method — it produces markup, nothing more. The caller decides w
 
 ## Reference
 
-vulkano-backend-controller (res.vsr/res.render split, routing, scaffold), vulkano-backend-views-nunjucks, vulkano-backend-views-handlebars, `app/config/views.js`, `node_modules/@vulkano/core/libs/View.js` (`View.render` source).
+vulkano-backend-controller (res.vsr/res.render split, routing, scaffold), vulkano-backend-templates, `app/config/views.js`, `node_modules/@vulkano/core/libs/View.js` (`View.render` source).
