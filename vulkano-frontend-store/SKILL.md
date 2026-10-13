@@ -7,7 +7,7 @@ description: Use when adding or editing a Pinia store in this Vulkano framework 
 
 ## Overview
 
-State worth surviving a re-render lives in Pinia, not local component `ref`/`reactive`: component-local state resets whenever HMR can't hot-swap a module in place and falls back to a full reload, while state in a store is less likely to be lost across that reload. Pinia is installed by default (`app.use(createPinia())` already registered in each entrypoint's `app.js`) — just create the store file, no setup step.
+State shared across components, or fetched data reused by more than one view, lives in Pinia, not local component `ref`/`reactive`. Pinia is installed by default (`app.use(createPinia())` already registered in each entrypoint's `app.js`) — just create the store file, no setup step.
 
 ## When to use
 
@@ -32,15 +32,15 @@ Each store owns only its own entity's state, getters, and actions — a componen
 
 ```js
 // store/useEventStore.js
-import { ref, getCurrentInstance } from 'vue';
+import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import Api from '../Api'; // stores import Api — no component instance here
 
 export const useEventStore = defineStore('event', () => {
-  const { $api } = getCurrentInstance().proxy || {};
   const current = ref(null);
 
   async function fetch(id) {
-    current.value = await $api.get(`/event/${id}`);
+    current.value = await Api.get(`/event/${id}`);
   }
 
   return { current, fetch };
@@ -78,7 +78,7 @@ export const useAppStore = defineStore('app', () => {
 
 ## After writing
 
-- New store → test at `test/frontend/<entrypoint>/store/use<Entity>Store.test.js` (`createPinia()` + `setActivePinia()` in `beforeEach`, mock `$api` at the store boundary — never hit real network). Full pattern table: vulkano-testing skill.
+- New store → test at `test/frontend/<entrypoint>/store/use<Entity>Store.test.js` (`createPinia()` + `setActivePinia()` in `beforeEach`, `vi.mock` the entrypoint's `Api.js` — never hit real network). Full pattern table: vulkano-testing skill.
 
 ## Reference
 

@@ -61,7 +61,7 @@ import { ref, onMounted, getCurrentInstance, toRef } from 'vue';
 
 export default {
   setup(props) {
-    const { $api } = getCurrentInstance().proxy || {}; // never `import Api` directly
+    const { $api } = getCurrentInstance().proxy || {}; // components: $api; stores/composables/utils: import Api
     const sku = toRef(props, 'sku');
     const products = ref([]);
 
@@ -82,7 +82,7 @@ export default {
 </template>
 ```
 
-`$api` is a global property (`app.config.globalProperties.$api`), not an importable module — always pull it off `getCurrentInstance().proxy`.
+`$api` is a global property (`app.config.globalProperties.$api`) — in a component, pull it off `getCurrentInstance().proxy` inside `setup()`. Outside a component (store, composable, util, router guard) there is no instance: `import Api from '<entrypoint>/Api'` instead.
 
 ## Images / static assets
 
