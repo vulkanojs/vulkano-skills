@@ -128,7 +128,7 @@ In Nunjucks a filter called as a function (or a helper piped) is undefined — p
 
 ## After writing
 
-- Public view → title/description per route, URL in `public/sitemap.xml` (`references/AGENTS/BACKEND.md` § SEO wiring).
+- Public view → title/description per route (`references/AGENTS/BACKEND.md` § SEO wiring).
 - Controller HTTP test asserts on the rendered HTML (vulkano-testing).
 - Check it in a browser (`references/AGENTS/DEVTOOLS.md`) — `vp check` doesn't catch layout issues.
 
