@@ -35,13 +35,13 @@ Not for controllers/routes — see vulkano-backend-controller skill. Not for Vue
 
 ## Standard CRUD methods
 
-| Method                       | Purpose                                                                                     |
-| ---------------------------- | ------------------------------------------------------------------------------------------- |
-| `getAll(props)`              | List/paginate. `props` = `{ page, perPage, search, sort, populate, fields }`                |
-| `get<ModelName>(id, props?)` | Get one record by id. `props` optional, only needed for `?populate=` (see below)            |
-| `create(data)`               | Create                                                                                      |
-| `update(id, data)`           | Update                                                                                      |
-| `delete(id)`                 | Soft-delete: write `active: false` directly — never via an `update` that applies `fillable` |
+| Method                       | Purpose                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `getAll(props)`              | List/paginate. `props` = `{ page, perPage, search, sort, populate, fields }`     |
+| `get<ModelName>(id, props?)` | Get one record by id. `props` optional, only needed for `?populate=` (see below) |
+| `create(data)`               | Create                                                                           |
+| `update(id, data)`           | Update                                                                           |
+| `delete(id)`                 | Soft-delete — an update: `return this.update(_id, { active: false })`            |
 
 ```js
 // app/models/<Name>.js — shape adapted from node_modules/@vulkano/core/examples/models/Example.js
@@ -76,12 +76,7 @@ module.exports = {
     });
   },
   delete(_id) {
-    // direct write: an update() that applies `fillable` would drop `active`
-    return Example.findOneAndUpdate(
-      { _id, active: true },
-      { active: false, updatedAt: Date.now() },
-      { returnDocument: 'after' }
-    ).then((r) => (r ? r.toObject({ transform: true }) : VSError.notFound()));
+    return this.update(_id, { active: false }); // soft delete
   }
 };
 ```
