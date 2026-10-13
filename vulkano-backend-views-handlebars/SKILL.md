@@ -116,7 +116,7 @@ Layout prints `res.locals.seo.*`, set by `app/config/middlewares/seo.js` and ove
 {{#if seo.noindex}}<meta name="robots" content="noindex, nofollow" />{{/if}}
 ```
 
-Defaults, per-route override and private-mode noindex: `references/AGENTS/BACKEND.md` § SEO wiring. A CMS/admin layout skips this block entirely — hardcode its `<title>` instead of interpolating `seo.*`.
+Defaults, per-route override and private-mode noindex: `references/AGENTS/BACKEND.md` § SEO wiring. A CMS/admin layout skips this block: only the `<title>` from `seo.title` (its controller sets `'VulkanoJS - Admin'`, any admin controller may override) plus a fixed `<meta name="robots" content="noindex, nofollow" />` — no description/canonical/og.
 
 ## i18n
 
