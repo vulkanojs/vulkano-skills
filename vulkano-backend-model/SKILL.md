@@ -86,7 +86,7 @@ The hand-written methods above are the technique to follow when a model needs it
 
 Canonical rule — referenced (not repeated in full) by vulkano-backend-views-handlebars and vulkano-backend-views-nunjucks.
 
-Verified in `node_modules/@vulkano/core/libs/Paginate.js#get` (lines ~216-283):
+Source: `Paginate.get` in `node_modules/@vulkano/core/libs/Paginate.js`:
 
 - `props.page` a number, or omitted (defaults to `1`) → a **page object**: `{ items, page, perPage, totalPages, next, prev, cursor }`. Consumer reads `.items`, never iterates the resolved value itself.
 - `props.page === 'all'` (i.e. the caller passed `?page=all`) → pagination is skipped entirely and `getAll` resolves to a **bare array** of Mongoose documents instead — no `.items`, no page metadata, and these documents are NOT run through `.toObject({ transform: true })` (unlike `getExample`/`get<ModelName>`).
@@ -113,7 +113,7 @@ Validate/cast the value (e.g. confirm it's a valid ObjectId) before using it in 
 
 ## Field selection in `getAll` (`?fields=`)
 
-Verified in `node_modules/@vulkano/core/libs/Paginate.js#get` (lines ~223-234, ~273-274, ~260): `getAll`'s `props.fields` — a comma-separated string (`?fields=name,price`) or an array (`['name', 'price']`) — becomes a Mongoose `.select()` (`opts.select = fields.join(' ')`). `getAll({ fields: 'name' })` returns documents with only `name` (plus `_id`, Mongoose always includes it) instead of the full document. Applies to both pagination shapes — the normal page object and the `?page=all` bare array (§ above) — since both go through the same `Paginate.get`. Does NOT apply to `get<ModelName>(id, props)` — that's a plain `findOne`, unrelated to `Paginate.get`, so it always returns the full document regardless of `props.fields`.
+Source: `Paginate.get` in `node_modules/@vulkano/core/libs/Paginate.js`. `getAll`'s `props.fields` — a comma-separated string (`?fields=name,price`) or an array (`['name', 'price']`) — becomes a Mongoose `.select()` (`opts.select = fields.join(' ')`). `getAll({ fields: 'name' })` returns documents with only `name` (plus `_id`, Mongoose always includes it) instead of the full document. Applies to both pagination shapes — the normal page object and the `?page=all` bare array (§ above) — since both go through the same `Paginate.get`. Does NOT apply to `get<ModelName>(id, props)` — that's a plain `findOne`, unrelated to `Paginate.get`, so it always returns the full document regardless of `props.fields`.
 
 No extra code needed in a model's `getAll` for this to work — `props`/`req.query` flowing straight into `Paginate.serializeQuery` is enough. Only add a guard if the endpoint must NOT allow field selection (e.g. it always needs a specific field for business logic downstream) — otherwise a request with `?fields=` that omits that field is a real bug: code assuming a field exists on every `getAll` result breaks silently.
 

@@ -120,7 +120,7 @@ Defaults, per-route override and private-mode noindex: `references/AGENTS/BACKEN
 
 ## i18n
 
-A `t(key, options)` helper is registered out of the box (`node_modules/@vulkano/core/views/helpers/t.js`, since `@vulkano/core@1.24.2`). It wraps `i18n.t(...)` as a plain callable function — required for Handlebars, since Handlebars helpers must be functions, not objects with methods (the raw `i18n` global doesn't work here). Call it directly, no controller wiring needed:
+A `t(key, options)` helper is registered out of the box (`node_modules/@vulkano/core/views/helpers/t.js`). It wraps `i18n.t(...)` as a plain callable function — required for Handlebars, since Handlebars helpers must be functions, not objects with methods (the raw `i18n` global doesn't work here). Call it directly, no controller wiring needed:
 
 ```html
 {{t "welcome"}}

@@ -108,7 +108,7 @@ Defaults, per-route override and private-mode noindex: `references/AGENTS/BACKEN
 
 ## i18n
 
-A `t(key, options)` helper is registered out of the box (`node_modules/@vulkano/core/views/helpers/t.js`, since `@vulkano/core@1.24.2`). Call it directly, no controller wiring needed:
+A `t(key, options)` helper is registered out of the box (`node_modules/@vulkano/core/views/helpers/t.js`). Call it directly, no controller wiring needed:
 
 ```html
 {{ t('welcome') }}
