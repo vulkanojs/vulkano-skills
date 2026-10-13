@@ -146,7 +146,7 @@ module.exports = {
 };
 ```
 
-`res.vsr(promise)` turns a rejection into the error response — no `.catch` needed. A rejected `VSError` keeps its status (401); a plain rejection becomes 400.
+`res.vsr(promise)` turns a rejection into the error response — no `.catch` needed. A rejected `VSError` keeps its status (401); a rejection without `statusCode` becomes 400.
 
 ## After writing
 
