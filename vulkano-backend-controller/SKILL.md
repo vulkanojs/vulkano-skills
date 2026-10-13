@@ -26,14 +26,14 @@ Not for pure `frontend/` frontend work — see vulkano-frontend-component, vulka
 
 ## File placement & naming
 
-| Kind              | Path                                          | Example                 |
-| ----------------- | --------------------------------------------- | ----------------------- |
-| View controller   | `app/controllers/<Name>Controller.js`         | `HomeController.js`     |
-| Module controller | `app/controllers/config/<Name>Controller.js`  | `VatTypesController.js` |
-| API controller    | `app/controllers/api/<Name>Controller.js`     | `ProductsController.js` |
-| Socket controller | `app/controllers/sockets/<Name>Controller.js` | `EchoController.js`     |
+| Kind              | Path                                           | Example                                              |
+| ----------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| View controller   | `app/controllers/<Name>Controller.js`          | `HomeController.js`                                  |
+| Module controller | `app/controllers/<module>/<Name>Controller.js` | `config/VatTypesController.js` → `/config/vat-types` |
+| API controller    | `app/controllers/api/<Name>Controller.js`      | `ProductsController.js`                              |
+| Socket controller | `app/controllers/sockets/<Name>Controller.js`  | `EchoController.js`                                  |
 
-Controller name: plural PascalCase + `Controller` suffix. Resource segment in the URL = controller's own filename, kebab-cased (`toKebabCase()` splits at every word boundary — `MyAccount` → `my-account`) — no automatic singularization/pluralization happens, so the filename must already be plural. Examples: `TasksController.js` → resource `tasks` → view `/tasks`, API `/api/tasks`; `VatTypesController.js` → resource `vat-types` → API `/api/vat-types`.
+Controller name: plural PascalCase + `Controller` suffix for resources (page controllers like `Home`, `Admin` stay singular). A module folder becomes a URL prefix (`config/VatTypesController.js` → `/config/vat-types`; under `api/` → `/api/vat-types`). Resource segment in the URL = controller's own filename, kebab-cased (`toKebabCase()` splits at every word boundary — `MyAccount` → `my-account`) — no automatic singularization/pluralization happens, so the filename must already be plural. Examples: `TasksController.js` → resource `tasks` → view `/tasks`, API `/api/tasks`; `VatTypesController.js` → resource `vat-types` → API `/api/vat-types`.
 
 ## Method key → route
 
@@ -74,16 +74,17 @@ Only add an entry to `app/config/routes.js` when the convention can't express it
 Same rule on both sides of a form: don't split create and edit into separate methods/controllers just because one has an `:id` and the other doesn't.
 
 - **API controller**: already the natural shape — `post` (create) and `'put :id'` (update) are two method keys on the _same_ controller calling the _same_ model, shown above. Don't add a separate `CreateController`/`EditController`.
-- **View controller** serving a form page (`/product/create`, `/product/edit/:id`) — one method renders the same template for both, branching only on whether `:id` is present to prefill data:
+- **View controller** serving a form page (`/products/create`, `/products/edit/:id`) — one method renders the same template for both, branching only on whether `:id` is present to prefill data:
 
 ```js
 // app/controllers/ProductsController.js
 module.exports = {
-  'get create': (req, res) => res.render('product/form.html', { product: null }),
-  'get edit :id': (req, res) => {
-    Product.getProduct(req.params.id).then((product) =>
-      res.render('product/form.html', { product })
-    );
+  'get create': (req, res) => res.render('products/form.html', { product: null }),
+  // verb + one path token: 'get edit :id' would register /products/edit and drop :id
+  'get edit/:id': (req, res) => {
+    Product.getProduct(req.params.id)
+      .then((product) => res.render('products/form.html', { product }))
+      .catch(() => res.status(404).render('_shared/errors/404.html'));
   }
 };
 ```
@@ -150,7 +151,7 @@ module.exports = {
 };
 ```
 
-The `Order` model above needs no code at all for this — `getAll(props)`, `get<ModelName>(id, props)`, `create(data)`, `update(id, data)`, `delete(id)`, and `_buildPopulate` are all mixed into every model automatically by the core's scaffold layer (`database/scaffold.js`), including `?populate=` support. A model only needs to hand-write these if it's NOT using the scaffold shortcut, or wants to override one of them — see vulkano-backend-model.
+The `Product` model needs no code at all for this — `getAll(props)`, `get<ModelName>(id, props)`, `create(data)`, `update(id, data)`, `delete(id)`, and `_buildPopulate` are all mixed into every model automatically by the core's scaffold layer (`database/scaffold.js`), including `?populate=` support. A model only needs to hand-write these if it's NOT using the scaffold shortcut, or wants to override one of them — see vulkano-backend-model.
 
 - Subdocument routes (embedded array fields) — opt-in `subdocs`, off by default:
 

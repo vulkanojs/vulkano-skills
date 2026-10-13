@@ -37,9 +37,9 @@ Follow in order. Stop and ask before anything not listed. Never run `git commit`
 8. Core: update `@vulkano/core`.
    - Current: the version installed in `node_modules/@vulkano/core/package.json` and the range where the project pins it (`catalog['@vulkano/core']` in `pnpm-workspace.yaml`, or `dependencies` in `package.json` if the project doesn't use a catalog). Latest: `pnpm view @vulkano/core version`.
    - If a newer version exists, read the core's changelog for the versions in between (`CHANGELOG.md` in the package, or the core repo's releases) and tell the user what changed. A major bump, or a breaking change that touches `app/config/`, controllers, or models: stop and ask before installing.
-   - Otherwise set the new range (`^<latest>`) where the project pins it and run `pnpm install`. Package and lockfile changes are security-sensitive (see `AGENTS.md`): show the diff, and only touch `@vulkano/core`, no other dependency.
+   - Otherwise set the exact `<latest>` version where the project pins it (`pnpm-workspace.yaml` catalog — exact pins, no `^`) and run `pnpm install`. Package and lockfile changes are security-sensitive (see `AGENTS.md`): show the diff, and only touch `@vulkano/core`, no other dependency.
    - If the changelog asks for changes in project code, list them for the user; don't apply them silently.
-9. Verify: run `vp check` and `vp test`. Check that every relative link and anchor in `AGENTS.md`, `PROJECT.md` and `references/AGENTS/*.md` resolves. Grep the project for references to removed files (e.g. `DEPLOYMENT.md`, `ARCHITECTURE.md § Multiple entry points`).
+9. Verify: run `vp check` and `vp test`. Check that every relative link and anchor in `AGENTS.md`, `PROJECT.md` and `references/AGENTS/*.md` resolves. Grep the project for references to removed files (e.g. `DEPLOYMENT.md`, or an old section name like `ARCHITECTURE.md § Multiple entry points`, now `§ Entrypoints`).
 10. Log: add an entry to the project's `CHANGELOG.md`, titled `## <date> — Vulkano template sync <vulkano-template/master sha>`, listing files added/removed/changed, migrations applied and skipped, and core version old → new.
 11. Report: the same summary plus anything ambiguous, and a suggested commit message in the form `[chore] docs: sync agent docs with Vulkano template <sha>`.
 

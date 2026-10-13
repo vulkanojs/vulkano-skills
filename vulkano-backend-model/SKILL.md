@@ -27,7 +27,7 @@ Not for controllers/routes — see vulkano-backend-controller skill. Not for Vue
 - Decide the filename: singular PascalCase (`Order.js` → `global.Order`, collection `order`, never pluralized).
 - Decide scaffold (zero-code CRUD) vs custom CRUD methods.
 - Don't introduce a repository/data-access abstraction layer or a parallel persistence pattern — the model IS the persistence layer here (Mongoose + these CRUD methods), per this project's KISS/no-premature-abstraction rule.
-- **`getAll`/`create`/`update`/`delete`/`get<ModelName>` looking similar across models is not a DRY violation — don't extract a shared helper/factory for them.** Each model's `getAll` differs in real ways (`searchBy` fields, `defaultProps.filter`, ad-hoc query filters, sort default) even when the boilerplate around it matches; a shared helper either can't express those differences or grows parameters/branches until it's harder to read than the plain per-model version it replaced. The truly-shared plumbing (`_buildPopulate`, `_parsePopulateEntries`, `_getSanitizedPopulate`, timestamps) is already mixed in by `database/scaffold.js` — nothing per-model to extract there. If a model genuinely needs zero custom logic, use the scaffold shortcut (`attributes` + `fillable`, see below) instead of writing a new abstraction; that's the project's one sanctioned way to avoid repeating CRUD code.
+- **`getAll`/`create`/`update`/`delete`/`get<ModelName>` looking similar across models is not a DRY violation — don't extract a shared helper/factory for them.** Each model's `getAll` differs in real ways (`searchBy` fields, `defaultProps.filter`, ad-hoc query filters, sort default) even when the boilerplate around it matches; a shared helper either can't express those differences or grows parameters/branches until it's harder to read than the plain per-model version it replaced. The truly-shared plumbing (`_buildPopulate`, `_parsePopulateEntries`, `_getSanitizedPopulate`, `_sanitizeFields`, `_stripHidden` from `database/scaffold.js`; `createdAt`/`updatedAt` from `database/mongodb.js`) is already mixed in — nothing per-model to extract there. If a model genuinely needs zero custom logic, use the scaffold shortcut (`attributes` + `fillable`, see below) instead of writing a new abstraction; that's the project's one sanctioned way to avoid repeating CRUD code.
 
 ## File & naming
 
@@ -35,13 +35,13 @@ Not for controllers/routes — see vulkano-backend-controller skill. Not for Vue
 
 ## Standard CRUD methods
 
-| Method                       | Purpose                                                                          |
-| ---------------------------- | -------------------------------------------------------------------------------- |
-| `getAll(props)`              | List/paginate. `props` = `{ page, perPage, search, sort, populate, fields }`     |
-| `get<ModelName>(id, props?)` | Get one record by id. `props` optional, only needed for `?populate=` (see below) |
-| `create(data)`               | Create                                                                           |
-| `update(id, data)`           | Update                                                                           |
-| `delete(id)`                 | Soft-delete (`return this.update(id, { active: false })`)                        |
+| Method                       | Purpose                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| `getAll(props)`              | List/paginate. `props` = `{ page, perPage, search, sort, populate, fields }`                |
+| `get<ModelName>(id, props?)` | Get one record by id. `props` optional, only needed for `?populate=` (see below)            |
+| `create(data)`               | Create                                                                                      |
+| `update(id, data)`           | Update                                                                                      |
+| `delete(id)`                 | Soft-delete: write `active: false` directly — never via an `update` that applies `fillable` |
 
 ```js
 // app/models/<Name>.js — shape adapted from node_modules/@vulkano/core/examples/models/Example.js
@@ -59,12 +59,13 @@ module.exports = {
     return Paginate.get(Example, query, populate);
   },
   getExample(_id, props) {
-    const query = Example.findOne({ _id });
+    const query = Example.findOne({ _id, active: true }); // soft-deleted records stay hidden
     this._buildPopulate(props).forEach((p) => query.populate(p));
     return query.then((r) => (r ? r.toObject({ transform: true }) : VSError.notFound()));
   },
   create(data) {
-    return new Example(data).save();
+    // save() returns the whole doc — strip `select: false` paths (password hash…)
+    return new Example(data).save().then((r) => this._stripHidden(r.toObject({ transform: true })));
   },
   update(_id, data) {
     return Example.getExample(_id).then((record) => {
@@ -74,8 +75,13 @@ module.exports = {
       );
     });
   },
-  delete(id) {
-    return this.update(id, { active: false });
+  delete(_id) {
+    // direct write: an update() that applies `fillable` would drop `active`
+    return Example.findOneAndUpdate(
+      { _id, active: true },
+      { active: false, updatedAt: Date.now() },
+      { returnDocument: 'after' }
+    ).then((r) => (r ? r.toObject({ transform: true }) : VSError.notFound()));
   }
 };
 ```
@@ -83,8 +89,6 @@ module.exports = {
 The hand-written methods above are the technique to follow when a model needs its own logic. Every model already inherits `getAll`, `get<Name>`, `getByField`, `create`, `update` and `delete` from the core (`database/scaffold.js`) — the controller decides what is exposed: `scaffold: 'ModelName'` + `allowedMethods` publishes them as an API (see vulkano-backend-controller). Zero-code model: `attributes` + `fillable: [...]` — `fillable` limits which fields the inherited `update` may write, so a scaffold API edits only those.
 
 ## `getAll(props)` resolves to one of TWO different shapes — depends on `props.page`
-
-Canonical rule — referenced (not repeated in full) by vulkano-backend-templates.
 
 Source: `Paginate.get` in `node_modules/@vulkano/core/libs/Paginate.js`:
 
@@ -138,7 +142,7 @@ Every model gets `_buildPopulate(props, extra)`, `_parsePopulateEntries(props)`,
   - `?populate=category:name|slug,brand` → `category` limited to name+slug, plus full `brand`
 - **Usage in a model method**: call `this._buildPopulate(props)` to get the populate array, then either pass it as `Paginate.get(Model, query, populate)`'s 3rd arg (list endpoints) or `.forEach((p) => query.populate(p))` on a `findOne` query (single-record endpoints).
 - Field names are matched case-insensitively against the schema's real paths — the caller doesn't need to know exact casing.
-- **Sensitive fields — `select: false` does NOT protect against this**: `_buildPopulate` passes the caller's `field1|field2` list straight into Mongoose's populate `select` as a plain inclusion list. Verified against this project's installed `mongoose` (`queryHelpers.js#applyPaths`): an explicitly-named field in an inclusion select overrides schema-level `select: false` — no `+` needed, so `?populate=user:password` returns `password` if that path exists on `User`, regardless of `select: false`. Don't rely on `select: false` alone here. Instead: never put `autopopulate: true` on a `ref` whose target model has fields the caller shouldn't see, or wrap `this._buildPopulate(props)`'s result and strip any `select` entries that name a sensitive field before passing it to `Paginate.get`/`query.populate`.
+- **Sensitive fields**: mark them `select: false` on the target model. `_buildPopulate` runs the caller's `field1|field2` list through the ref model's `_sanitizeFields` (core 2.1.6+), so `?populate=user:password` and `user:+password` never return the hash (`references/AGENTS/BACKEND.md` § Models).
 
 ## Hooks (optional)
 

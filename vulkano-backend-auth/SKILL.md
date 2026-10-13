@@ -107,8 +107,9 @@ module.exports = {
     if (!_id) {
       return VSError.reject('Invalid token', 401);
     }
-    return User.getUser(_id).then((u) =>
-      u && u.active ? u : VSError.reject('User not found', 401)
+    // findOne, not getUser: getByField rejects a missing/inactive user with 404 — this must be 401
+    return User.findOne({ _id, active: true }).then((u) =>
+      u ? u.toObject({ transform: true }) : VSError.reject('User not found', 401)
     );
   }
 };

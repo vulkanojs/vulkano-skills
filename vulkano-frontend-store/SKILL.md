@@ -47,6 +47,31 @@ export const useEventStore = defineStore('event', () => {
 });
 ```
 
+List shared by several views — same 4 states as a view (vulkano-frontend-component § List view), owned by the store:
+
+```js
+// store/useProductStore.js
+export const useProductStore = defineStore('product', () => {
+  const items = ref([]);
+  const isLoading = ref(false);
+  const error = ref('');
+
+  async function load(params = '') {
+    isLoading.value = true;
+    error.value = '';
+    try {
+      items.value = (await Api.get(`/product${params}`)).items ?? [];
+    } catch (err) {
+      error.value = err.message;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  return { items, isLoading, error, load };
+});
+```
+
 (setup-style store, in line with the Composition API preference — not the options-style `defineStore('event', { state, actions })`.)
 
 Naming: `use<Entity>Store` (singular, matching the model naming convention), file per store, no aggregator/barrel file — import each store directly where it's used.

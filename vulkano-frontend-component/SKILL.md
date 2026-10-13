@@ -65,8 +65,16 @@ export default {
     const sku = toRef(props, 'sku');
     const products = ref([]);
 
+    async function getData() {
+      try {
+        products.value = (await $api.get('/product')).items ?? []; // getAll → page object
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
     onMounted(async () => {
-      products.value = (await $api.get('/product')).items; // getAll → page object
+      await getData();
     });
 
     return { products, sku };
@@ -82,7 +90,7 @@ export default {
 </template>
 ```
 
-`$api` is a global property (`app.config.globalProperties.$api`) — in a component, pull it off `getCurrentInstance().proxy` inside `setup()`. Outside a component (store, composable, util, router guard) there is no instance: `import Api from '<entrypoint>/Api'` instead.
+`$api` is a global property (`app.config.globalProperties.$api`) — in a component, pull it off `getCurrentInstance().proxy` inside `setup()`. Outside a component (store, composable, util, router guard) there is no instance: `import Api` by relative path instead — `'../Api'` from `store/`, `composables/`, `utils/`; `'./Api'` from `routes.js` (guards).
 
 ## List view — 4 states
 
@@ -103,7 +111,7 @@ export default {
       isLoading.value = true;
       error.value = '';
       try {
-        items.value = (await $api.get('/product')).items;
+        items.value = (await $api.get('/product')).items ?? []; // Api.js resolves {} when data is empty
       } catch (err) {
         error.value = err.message; // Api.js: backend error.detail, status 0 = network
       } finally {
@@ -153,6 +161,9 @@ Two kinds of components live behind it, both get an entry:
 `components/` (and `components/ui/`) hold the code; `views/DesignSystem/Index.vue` holds nothing but examples — it never re-implements a component, only imports and demonstrates it.
 
 - Ships in the template as the entrypoint's design system page (tokens, typography, spacing, base components, grid); every reusable component adds its own section to it.
+- The route is registered only when `import.meta.env.DEV` (see the entrypoint's `routes.js`) — production builds don't include it.
+- One section per component: name, short description, a rendered live instance, and the exact `<template>` snippet to copy-paste (props included) — mirror that snippet verbatim when reusing, don't improvise a variant.
+- Keep entries flat, one per component — no nested taxonomy needed for this.
 
 ## Installed UI library is not optional — check `package.json` before native HTML
 
@@ -166,10 +177,6 @@ Detect which one before assuming none is installed — check `package.json` depe
 
 **`window.confirm`/`window.alert`/`window.prompt` are always off-limits** for user-facing confirmation or messaging (delete confirmations, save feedback, etc.) — native dialogs block the main thread and can't be styled, same reason native form-validation UI is banned (see vulkano-frontend-form). Use the installed library's own confirm/message components (e.g. shadcn-vue → `AlertDialog` + `Sonner`/`Toast`; Element Plus → `ElMessageBox.confirm(...)` + `ElMessage`/`ElNotification`; another kit → its equivalent). No UI library installed at all → build one minimal reusable confirm-modal/toast component (shared, not per-view) instead of reaching for `window.confirm`.
 
-- The route is registered only when `import.meta.env.DEV` (see the entrypoint's `routes.js`) — production builds don't include it.
-- One section per component: name, short description, a rendered live instance, and the exact `<template>` snippet to copy-paste (props included) — mirror that snippet verbatim when reusing, don't improvise a variant.
-- Keep entries flat, one per component — no nested taxonomy needed for this.
-
 ## Routing
 
 See vulkano-frontend-router for route wiring and the backend catch-all requirement.
@@ -180,11 +187,11 @@ Pinia, one store per concern (plus the `useAppStore` app-shell exception) — se
 
 ## Layout and styling
 
-CSS Grid only (never Flexbox), the responsive grid system (`.row`/`.column`), and BEM class naming — see vulkano-frontend-css.
+CSS Grid by default (never Flexbox unless `PROJECT.md` overrides), the responsive grid system (`.row`/`.column`), and BEM class naming — see vulkano-frontend-css.
 
 ## After writing
 
-- Add the component's `@import './X/_index.scss';` line to the parent `_index.scss` aggregator.
+- Add the component's `@import './X/index';` line to the parent `_index.scss` aggregator.
 - New reusable component → add its section to the design system page (`frontend/<entrypoint>/views/DesignSystem/Index.vue`).
 - New/edited store → see vulkano-frontend-store § After writing.
 - Visually verify in a browser per `references/AGENTS/DEVTOOLS.md`.

@@ -68,9 +68,12 @@ When a route is a resource with multiple actions (`/product/list`, `/product/edi
 ```
 views/
   Product/
+    _index.scss          # the folder's entry — imports the partials below
     List.vue / List.js / _list.scss
     Form.vue / Form.js / _form.scss
 ```
+
+`_index.scss` stays the one file the parent aggregator imports; `_list.scss`/`_form.scss` are partials it pulls in (`@import './list';`) so no single stylesheet grows long.
 
 ```js
 { path: '/product/list', component: () => import('./views/Product/List.vue') },
@@ -96,36 +99,62 @@ export default {
     const router = useRouter();
     const id = route.params.id; // undefined on /product/create
     const form = ref({ name: '', price: 0 });
+    const isSubmitting = ref(false);
+    const error = ref('');
+
+    async function getProduct(id) {
+      try {
+        form.value = await $api.get(`/product/${id}`); // prefill for edit
+      } catch (err) {
+        error.value = err.message;
+      }
+    }
 
     onMounted(async () => {
-      if (id) form.value = await $api.get(`/product/${id}`); // getData for edit
+      if (!id) return;
+      await getProduct(id);
     });
 
     async function submit() {
-      if (id) {
-        await $api.put(`/product/${id}`, form.value);
-      } else {
-        await $api.post('/product', form.value);
+      // validate first — useFormValidation, see vulkano-frontend-form (skipped here)
+      isSubmitting.value = true;
+      error.value = '';
+      try {
+        if (id) {
+          await $api.put(`/product/${id}`, form.value);
+        } else {
+          await $api.post('/product', form.value);
+        }
+        router.push('/product/list');
+      } catch (err) {
+        error.value = err.message; // backend error.detail
+      } finally {
+        isSubmitting.value = false;
       }
-      router.push('/product/list');
     }
 
-    return { form, submit };
+    return { form, isSubmitting, error, submit };
   }
 };
 ```
 
-Same rule applies to the backend controller (`PUT`/`POST` split on `:id`, not two controllers) — see vulkano-backend-controller.
+Only the `:id` branching is router-specific — fields, validation, flash and loading follow vulkano-frontend-form. Same rule applies to the backend controller (`PUT`/`POST` split on `:id`, not two controllers) — see vulkano-backend-controller.
 
 ## NotFound route + backend catch-all
 
-A route inside a Vue entrypoint only survives a hard refresh if the backend has that entrypoint's catch-all — rule in `references/AGENTS/BACKEND.md` § Routes, wiring in vulkano-frontend-entrypoint § Wiring. The frontend half, last in the same `routes.js`:
+A route inside a Vue entrypoint only survives a hard refresh if the backend has that entrypoint's catch-all — rule in `references/AGENTS/BACKEND.md` § Routes, wiring in vulkano-frontend-entrypoint § Wiring. The frontend half: the **last child of the `Layout` route** in the same `routes.js` — a child, so the 404 renders inside the page template:
 
 ```js
 import NotFound from './views/NotFound/Index.vue';
 
-// ...last route:
-{ path: '/:pathMatch(.*)*', component: NotFound }
+{
+  path: '/',
+  component: Layout,
+  children: [
+    // ...every other route
+    { path: ':pathMatch(.*)*', component: NotFound } // last
+  ]
+}
 ```
 
 Missing backend half → `<router-link>` works but a hard refresh 404s.

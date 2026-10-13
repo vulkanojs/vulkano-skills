@@ -142,6 +142,24 @@ export default {
     >{{ fieldErrors.email }}</span
   >
 
+  <label class="login__label">
+    Password <span class="field-required">*</span>
+    <input
+      id="password"
+      type="password"
+      autocomplete="current-password"
+      required
+      v-model="form.password"
+      :class="{ 'login__input--invalid': fieldErrors.password }"
+      :aria-invalid="!!fieldErrors.password"
+      :aria-describedby="fieldErrors.password ? 'password-error' : null"
+      @input="clearError('password')"
+    />
+  </label>
+  <span v-if="fieldErrors.password" id="password-error" class="login__field-error"
+    >{{ fieldErrors.password }}</span
+  >
+
   <Transition name="flash">
     <p
       v-if="flash"
@@ -174,8 +192,8 @@ Canonical rule lives in vulkano-frontend-component § "Installed UI library is n
 
 ## Microinteractions (required on every submit)
 
-- `loading` state on submit: disabled/`is-loading` button, spinner if the action takes noticeable time.
-- Success/error flash message (or the UI kit's toast) uses a short transition (~150-250ms), never an instant jump.
+- `loading` state on submit: disabled button + a loader (`is-loading` is an example class — create it once in `scss/_base.scss` if the project has none), spinner if the action takes noticeable time.
+- Success/error flash message (or the UI kit's toast) uses a short transition (~150-250ms), never an instant jump — the `<Transition name="flash">` needs its `.flash-enter-active`/`.flash-leave-active` rules, created once in `scss/_base.scss`.
 - Full rules (hover, `cursor: pointer`, shared utilities, GSAP/AOS policy): `references/AGENTS/FRONTEND.md` § Design patterns.
 
 ## After writing
