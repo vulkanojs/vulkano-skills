@@ -169,7 +169,7 @@ Handler signature is always `({ socket, body }, callback)`. Requires `app/config
 
 ## Handoff
 
-Report: which file(s) were created/changed, which convention applied (view/API/socket, scaffold vs custom), any route/socket-event implications, and `vp check`/`vp test` results.
+Report: which file(s) were created/changed, which convention applied (view/API/socket, scaffold vs custom), and any route/socket-event implications.
 
 ## Reference
 

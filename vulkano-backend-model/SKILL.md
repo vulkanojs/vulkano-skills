@@ -152,7 +152,7 @@ Do not report done until every `[ ]` below is true:
 
 ## Handoff
 
-Report: model file created/changed, scaffold vs custom CRUD, hooks added, populate/active decisions, consumer code checked/updated, `vp check`/`vp test` results.
+Report: model file created/changed, scaffold vs custom CRUD, hooks added, populate/active decisions, and consumer code checked/updated.
 
 ## Reference
 
