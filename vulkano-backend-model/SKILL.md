@@ -69,7 +69,7 @@ module.exports = {
   update(_id, data) {
     return Example.getExample(_id).then((record) => {
       const merged = { ...record, ...data };
-      return Example.findOneAndUpdate({ _id }, merged, { new: true }).then((r) =>
+      return Example.findOneAndUpdate({ _id }, merged, { returnDocument: 'after' }).then((r) =>
         r.toObject({ transform: true })
       );
     });
@@ -80,7 +80,7 @@ module.exports = {
 };
 ```
 
-Zero-code alternative — a scaffold model only needs `attributes` (+ optional `fillable: [...]` to whitelist updatable fields); the CRUD methods above are generated for it when the matching controller declares `scaffold: 'ModelName'` (see vulkano-backend-controller skill).
+The hand-written methods above are the technique to follow when a model needs its own logic. Every model already inherits `getAll`, `get<Name>`, `getByField`, `create`, `update` and `delete` from the core (`database/scaffold.js`) — the controller decides what is exposed: `scaffold: 'ModelName'` + `allowedMethods` publishes them as an API (see vulkano-backend-controller). Zero-code model: `attributes` + `fillable: [...]` — `fillable` limits which fields the inherited `update` may write, so a scaffold API edits only those.
 
 ## `getAll(props)` resolves to one of TWO different shapes — depends on `props.page`
 
