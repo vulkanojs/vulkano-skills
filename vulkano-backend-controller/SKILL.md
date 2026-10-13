@@ -92,8 +92,21 @@ Matches the frontend's single `Form.vue` (branches on route `:id` the same way �
 
 ## View vs API response
 
-- View controller → `res.render('folder/file.html', { ...locals })`. Writing the actual template? See vulkano-backend-views (routes to the Nunjucks or Handlebars skill depending on `app/config/views.js`).
+- View controller → `res.render('folder/file.html', { ...locals })`. Writing the actual template? See vulkano-backend-views (render vs vsr) and vulkano-backend-templates (Nunjucks/Handlebars syntax).
 - API controller → `res.vsr(promise, statusCode?)` → resolves to `{ success, statusCode, data }`. Errors: `VSError.reject(msg, code)` / `VSError.notFound(name)` keep their code; any rejection without a `statusCode` → 400 — use `VSError.reject(msg, 500)` for a real server error.
+- Several model calls in one action → pass an async function; vsr catches a `throw` or a rejected `await`:
+
+```js
+post(req, res) {
+  res.vsr(async () => {
+    const order = await Order.getOrder(req.params.id);
+    if (!order) return VSError.notFound('Order'); // return, not throw — it's a rejected Promise
+    return Invoice.createFromOrder(order);
+  }, 201);
+}
+```
+
+Only to orchestrate model calls — business logic still lives in the model. Never wrap it in `try`/`catch`.
 
 ## Controller rules (this project)
 
