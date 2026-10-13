@@ -1,78 +1,155 @@
 ---
 name: vulkano-backend-auth
-description: Use when adding or reviewing login/logout/session-check authentication in this Vulkano framework project — dedicated Auth/User model, AuthController method-key convention, JWT via httpOnly cookie, and why not to use localStorage/sessionStorage.
+description: Use when adding or editing login/logout/session-check authentication in this Vulkano framework project — Auth model + User model with bcrypt password hashing, AuthController, app/config/express/jwt.js, the req.auth middleware, protected /api routes, JWT in an httpOnly cookie.
 ---
 
 # Backend Auth
 
-## Overview
-
-The core (`@vulkano/core`) wires JWT (`Jwt.encode`/`Jwt.decode`, `express-jwt` middleware) but doesn't prescribe a model/controller shape. This skill is the template's recommended convention on top of that.
+Rules: `references/AGENTS/BACKEND.md` § Auth. This skill is the wiring, in order. Reference implementation in the core: `node_modules/@vulkano/core/examples/` (`services/Auth.js`, `controllers/api/AuthController.js`, `config/middlewares/auth.js`, `config/express/jwt.js`) — here `Auth` is a **model** (it owns the authentication business logic), not a service.
 
 ## When to use
 
-- Adding login/logout/session-check to a new project
-- Reviewing/editing an existing `AuthController`
-- Wiring the frontend router's auth guard against the backend session endpoint (see vulkano-frontend-router)
+- Adding login/logout/current-user to a project
+- Protecting `/api` routes, reading the logged user (`req.auth`) in a controller
+- Hashing/verifying passwords
 
-Not for authorization/role checks on individual routes — that's per-controller business logic, not covered here. Not for the JWT primitives themselves — see `@vulkano/core` README § JWT Authentication.
+Not for the frontend guard — see vulkano-frontend-router § Auth guard.
 
-## Before implementing — secrets in `.env`
+## 1. Setup
 
-Both are `''` by default in the core's config examples — an empty signing key is insecure, so never ship auth wired up without setting these:
+```bash
+pnpm add bcryptjs   # core uses it too, but under pnpm the app can't require a core dep
+```
 
-- **`JWT_SECRET_KEY`** — signs the JWT itself (`app/config/express/jwt.js`, `key: process.env.JWT_SECRET_KEY`). Required — this is what makes a forged/tampered token detectable.
-- **`COOKIES_SECRET_KEY`** — only needed if the cookie is set as a _signed_ cookie (`res.cookie('token', token, { signed: true, ... })`) for tamper-evidence on top of `httpOnly`; requires enabling `app/config/express/cookies.js` (`enabled: true`, `secret: process.env.COOKIES_SECRET_KEY`) — it's disabled and unset by default. Plain `httpOnly` (unsigned) is enough for the XSS protection this skill is about; add signing only when the project also wants tamper-evidence on the cookie value itself.
+- `.env`: non-empty `JWT_SECRET_KEY` and `SALT_KEY` (already listed in `.env.example`). Missing → ask the user or generate one (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`) and write it to `.env`. Never commit it.
+- `app/config/settings.js`: add `salt: process.env.SALT_KEY || ''` (read as `app.config.settings.salt`).
+- Copy `examples/config/express/jwt.js` → `app/config/express/jwt.js`, set `enabled: true`. Its default `ignore` leaves `/api/` and every `/api/auth/*` route public except `/api/auth/current` — add each other public endpoint there. `enabled: true` + empty key → the server does not boot.
+- Copy `examples/config/middlewares/auth.js` → `app/config/middlewares/auth.js` unchanged. express-jwt leaves the encrypted payload on `req.auth`; this middleware decrypts it, so controllers read `req.auth._id`. Role/ACL checks go in its commented block.
+- Token expiration: `Jwt.encode` payloads need `expiration` (ms timestamp) — `Jwt.getToken` drops expired/missing ones, so the request gets 401. Only `expiration: false` in `jwt.js` disables that (avoid).
 
-**If a secret isn't set yet**, don't silently fall back to the core's empty-string default. Either:
+## 2. User model — password hashing
 
-1. Ask the user for a value, or
-2. Generate one and write it into `.env` — `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` (or the WordPress salt generator linked in the core's own config comments) — then confirm it landed in `.env`, not just in a running process's memory. A secret generated but never persisted invalidates every session on the next restart.
+```js
+// app/models/User.js
+const bcrypt = require('bcryptjs');
 
-Never commit the generated value anywhere but `.env` (gitignored) — see AGENTS.md § Security considerations.
+const hash = (plain) => bcrypt.hashSync(`${app.config.settings.salt}-${String(plain).trim()}`, 10);
 
-## Convention
+module.exports = {
+  attributes: {
+    email: { type: String, required: true, lowercase: true, trim: true },
+    password: { type: String, select: false } // never returned unless .select('+password')
+  },
 
-- **Dedicated service/model** — `Auth`/`User` (whichever this app calls it), not login logic bolted onto an unrelated model. Follows vulkano-backend-model for schema/CRUD shape.
-- **Dedicated controller** — `app/controllers/api/AuthController.js`, method-key convention (see vulkano-backend-controller):
+  beforeSave(next) {
+    if (this.isModified('password')) {
+      this.password = hash(this.password); // only when changed — re-saving must not re-hash
+    }
+    next();
+  },
+
+  beforeFindOneAndUpdate(next) {
+    if (this._update.password && String(this._update.password).trim()) {
+      this._update.password = hash(this._update.password);
+    } else {
+      delete this._update.password; // empty password on edit = keep current one
+    }
+    next();
+  },
+
+  hash
+};
+```
+
+## 3. Auth model
+
+```js
+// app/models/Auth.js — no attributes: plain global, not a collection
+const bcrypt = require('bcryptjs');
+
+const SESSION_MS = 1000 * 60 * 60 * 24 * 7; // 1 week — keep cookie maxAge equal
+
+module.exports = {
+  SESSION_MS,
+
+  verifyPassword(plain, hashed) {
+    return bcrypt.compareSync(
+      `${app.config.settings.salt}-${String(plain || '').trim()}`,
+      hashed || ''
+    );
+  },
+
+  login({ email, password } = {}) {
+    const conditions = {
+      email: String(email || '')
+        .toLowerCase()
+        .trim(),
+      active: true
+    };
+
+    return User.findOne(conditions)
+      .select('+password')
+      .then((u) => {
+        if (!u || !Auth.verifyPassword(password, u.password)) {
+          return VSError.reject('Invalid email or password', 401); // reject, never `return new VSError()`
+        }
+        return Auth.setToken(u);
+      });
+  },
+
+  setToken(u) {
+    const user = { _id: u._id, email: u.email, role: u.role || '' };
+    return { user, token: Jwt.encode({ ...user, expiration: Date.now() + SESSION_MS }) };
+  },
+
+  getCurrent(auth) {
+    const { _id } = auth || {};
+    if (!_id) {
+      return VSError.reject('Invalid token', 401);
+    }
+    return User.getUser(_id).then((u) =>
+      u && u.active ? u : VSError.reject('User not found', 401)
+    );
+  }
+};
+```
+
+Errors: always `return VSError.reject(...)` or `throw` inside `.then` — `return new VSError(...)` resolves the promise with an error object and login "succeeds".
+
+## 4. AuthController
 
 ```js
 // app/controllers/api/AuthController.js
 module.exports = {
   'post login': (req, res) => {
-    // POST /api/auth/login
-    User.authenticate(req.body).then((user) => {
-      const token = Jwt.encode({ id: user._id });
-      res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-      res.vsr(Promise.resolve(user));
-    });
+    res.vsr(
+      Auth.login(req.body).then(({ user, token }) => {
+        res.cookie(Jwt.getConfig().cookieName || 'token', token, {
+          httpOnly: true,
+          secure: app.PRODUCTION,
+          sameSite: 'lax',
+          maxAge: Auth.SESSION_MS
+        });
+        return user; // token travels only in the cookie
+      })
+    );
   },
+
   'post logout': (req, res) => {
-    // POST /api/auth/logout
-    res.clearCookie('token');
+    res.clearCookie(Jwt.getConfig().cookieName || 'token');
     res.vsr(Promise.resolve({}));
   },
-  current(req, res) {
-    // GET /api/auth/current — no verb prefix needed, GET is default
-    res.vsr(req.user ? Promise.resolve(req.user) : VSError.reject('Unauthorized', 401));
+
+  'get current': (req, res) => {
+    res.vsr(Auth.getCurrent(req.auth));
   }
 };
 ```
 
-## Token storage — `httpOnly` cookie, never `localStorage`
-
-On successful login, set the JWT as an `httpOnly` (and `secure` in production) cookie — never return it in the response body for client-side storage. `Jwt.getToken(req)` already reads from cookie, header, or query param, so no custom token-extraction logic is needed on subsequent requests.
-
-`localStorage`/`sessionStorage` are readable by any script on the page — a token or user object stored there is exposed to XSS. This applies to the user object too, not just the token: never cache the logged-in user client-side. Fetch it fresh via `GET /api/auth/current` on every route change instead (see vulkano-frontend-router § Auth guard).
+`res.vsr(promise)` turns a rejection into the error response — no `.catch` needed. A rejected `VSError` keeps its status (401); a plain rejection becomes 400.
 
 ## After writing
 
-Do not report done until every `[ ]` below is true:
-
-- Confirm no endpoint response ever returns a password hash or the raw token in its JSON body (`res.vsr` payload) — strip/select fields explicitly (see AGENTS.md § Security considerations).
-- [ ] **Auth test exists** at `test/app/controllers/AuthController.http.test.js` covering login success/failure, logout, and `current` with/without a valid session. Not optional: do not report done without it, and list its path in the handoff.
-- [ ] `JWT_SECRET_KEY` is set (non-empty) in `.env` — an empty key makes login fail with a 500.
-
-## Reference
-
-`node_modules/@vulkano/core/README.md` § JWT Authentication, vulkano-backend-model (Auth/User model shape), vulkano-backend-controller (method-key convention), vulkano-frontend-router § Auth guard (frontend consumer side).
+- [ ] Test `test/app/controllers/Auth.http.test.js`: login ok (sets `token` cookie, body has no token/password), wrong password → 401, logout clears cookie, `current` with cookie → user, without → 401. Model test `test/app/models/Auth.test.js` for `verifyPassword`/`login`.
+- [ ] `JWT_SECRET_KEY` and `SALT_KEY` set in `.env`; server boots with `jwt.js` enabled.
+- [ ] Every non-auth public endpoint listed in `jwt.js` `ignore`; everything else under `/api/` requires the cookie.
