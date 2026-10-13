@@ -117,41 +117,18 @@ export default {
 
 Same rule applies to the backend controller (`PUT`/`POST` split on `:id`, not two controllers) — see vulkano-backend-controller.
 
-## Backend catch-all — required for hard refresh
+## NotFound route + backend catch-all
 
-`app/config/routes.js` must keep a catch-all as its **last** entry so a hard refresh or direct URL hit on any client route returns the SPA's `index.html` instead of a 404:
-
-```js
-module.exports = {
-  '/': 'HomeController.get',
-  '/*': 'HomeController.get' // must stay last
-};
-```
-
-Without it, every non-`/` client route 404s on hard refresh/direct URL while still working via in-app navigation — that split symptom (`<router-link>` works, refresh 404s) is the tell this is missing. Safe to keep last: convention API routes (`app/controllers/api/*`) register before `config/routes.js` entries, so `/*` never shadows an API route.
-
-**Only add a `/*` (or scoped `/<area>/*`) catch-all for an area that actually mounts a Vue app** — check that its backend layout has `<div id="app">` + `{{ vite({ entry: '<name>', type: 'script' }) | safe }}` (e.g. `app/views/_shared/templates/admin.html`). A fully server-rendered area (its layout has no `<div id="app">` mount point) must **not** get a blanket `/*`: `@vulkano/core` already returns a real `404` via its built-in handler (`app/views/_shared/errors/404.html`) for any unmatched route in that area, and a catch-all there would intercept it and soft-200 every invalid URL into the homepage instead — wrong for SEO and for users. When adding the catch-all for a mounted area, always add both halves together, never one without the other:
-
-1. **Backend**: the scoped (or generic) catch-all above.
-2. **Frontend**: a Vue Router catch-all in that entrypoint's `routes.js` — `{ path: '/:pathMatch(.*)*', component: NotFound }` — rendering a `views/NotFound/Index.vue`, so an invalid path inside that area shows a real 404 UI instead of silently re-rendering the home route.
-
-### Multiple entry points (e.g. a separate `/admin` area)
-
-Creating a brand-new entrypoint (a CMS/admin app, a custom landing, or any other split app separate from the public front) — the `frontend/<name>/` folder scaffold, Vite/nodemon wiring, and the backend template/controller/catch-all scaffold — is covered by vulkano-frontend-entrypoint. Use it whenever the task is adding the entrypoint itself, not just a route inside one that already exists.
-
-Once that entrypoint exists, each one still needs its **own** backend catch-all, scoped to its path prefix, registered **before** the generic `/*` so the more specific pattern isn't shadowed by it:
+A route inside a Vue entrypoint only survives a hard refresh if the backend has that entrypoint's catch-all — rule in `references/AGENTS/BACKEND.md` § Routes, wiring in vulkano-frontend-entrypoint § Wiring. The frontend half, last in the same `routes.js`:
 
 ```js
-module.exports = {
-  '/': 'HomeController.get',
-  '/admin/*': 'AdminController.get', // scoped catch-all for the admin entry — must come before '/*'
-  '/*': 'HomeController.get' // public front catch-all — must stay last
-};
+import NotFound from './views/NotFound/Index.vue';
+
+// ...last route:
+{ path: '/:pathMatch(.*)*', component: NotFound }
 ```
 
-`AdminController.get` renders the admin entry's own `index.html`/template (its own `vite({ entry: 'admin' })` bundle, not the public front's `app` entry) — the two SPAs don't share a bundle just because they share the Express process.
-
-The scoped entrypoint's own `app.js` must pass the same prefix as the Vue Router base (`createWebHistory('/admin')`) — see vulkano-frontend-entrypoint § Router base path. Mismatch between the two is a common miss: the backend route serves the app fine, but every client-side route inside it fails to match because the router is still expecting `/`.
+Missing backend half → `<router-link>` works but a hard refresh 404s.
 
 ## Auth guard — never cache user client-side
 
@@ -227,7 +204,7 @@ The guard is UX only — the real boundary is the backend: every `/api` route a 
 
 ## After writing
 
-- Confirm the backend `/*` catch-all still exists if this is the first route added to a fresh project.
+- First non-root route in an entrypoint → its catch-all must be active in `app/config/routes.js` (`references/AGENTS/BACKEND.md` § Routes).
 - Test hard-refresh on the new route, not just in-app navigation.
 
 ## Reference

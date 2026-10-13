@@ -57,7 +57,7 @@ frontend/<name>/
 
 ### Router base path
 
-Required for any non-root entrypoint: `createWebHistory()` defaults to base `/`, so Vue Router matches routes against the full URL path with no prefix stripped. An entrypoint mounted under a path prefix (e.g. `/admin`) MUST pass that prefix as the base — `createWebHistory('/admin')` in `app.js` — or every route in `routes.js` silently fails to match once served from the real backend URL (works fine in isolation/dev-root testing, breaks only once the catch-all route actually serves it under its prefix). Only the entrypoint mounted at `/` (the public front) omits the base. This must match the catch-all path registered in `app/config/routes.js` exactly (see Wiring below and vulkano-frontend-router § Multiple entry points).
+Required for any non-root entrypoint: `createWebHistory()` defaults to base `/`, so Vue Router matches routes against the full URL path with no prefix stripped. An entrypoint mounted under a path prefix (e.g. `/admin`) MUST pass that prefix as the base — `createWebHistory('/admin')` in `app.js` — or every route in `routes.js` silently fails to match once served from the real backend URL (works fine in isolation/dev-root testing, breaks only once the catch-all route actually serves it under its prefix). Only the entrypoint mounted at `/` (the public front) omits the base. This must match the catch-all path registered in `app/config/routes.js` exactly (see Wiring below).
 
 ## Wiring
 
@@ -87,7 +87,7 @@ Required for any non-root entrypoint: `createWebHistory()` defaults to base `/`,
     '/*': 'HomeController.get'
   };
   ```
-  See vulkano-frontend-router § Multiple entry points for why the order matters — convention API routes (`/api/*`) register before `config/routes.js` entries, so `/*` never shadows them regardless of where it sits, but a scoped catch-all still needs to precede the generic one or it gets shadowed by it.
+  Rule (order, when not to add one): `references/AGENTS/BACKEND.md` § Routes. Frontend `NotFound` half: vulkano-frontend-router.
 
 ## Vanilla-JS entrypoint (server-rendered page, no Vue SPA)
 
@@ -119,4 +119,4 @@ Vue entrypoint — do not report done until every box is true (a missing one is 
 
 ## Reference
 
-`references/AGENTS/BUILD.md`, vulkano-frontend-router § Multiple entry points / Backend catch-all, vulkano-backend-controller.
+`references/AGENTS/BUILD.md`, vulkano-frontend-router § NotFound route + backend catch-all, `references/AGENTS/BACKEND.md` § Routes, vulkano-backend-controller.
