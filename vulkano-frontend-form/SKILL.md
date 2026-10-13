@@ -107,8 +107,12 @@ export default {
       try {
         await $api.post('/auth/login', form);
         flash.value = { type: 'success', message: 'Signed in' };
-      } catch (_err) {
-        flash.value = { type: 'error', message: 'Could not sign in. Please try again.' };
+      } catch (err) {
+        // Api.js rejects with an Error: message = backend error.detail, status 0 = network
+        flash.value = {
+          type: 'error',
+          message: err.message || 'Could not sign in. Please try again.'
+        };
       } finally {
         isSubmitting.value = false;
       }
@@ -154,7 +158,7 @@ export default {
 </form>
 ```
 
-Submit failure (`$api` rejects on non-2xx) always surfaces as a flash message — never swallow the error silently. If the project has a UI kit installed (see below), render it with the kit's toast/message component instead of the inline `<p>`.
+Submit failure (`$api` rejects with an `Error` whose `message` is the backend's `error.detail`, plus `status`) always surfaces as a flash message — never swallow the error silently. Show `err.message`; a custom text only for a specific `err.status` (e.g. `0` → offline). If the project has a UI kit installed (see below), render it with the kit's toast/message component instead of the inline `<p>`.
 
 ## Input types — still required
 
