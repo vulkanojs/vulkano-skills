@@ -15,7 +15,7 @@ Forms never rely on native browser validation UI (`required`/`:invalid` styling,
 
 Any `<form>` add/edit in `frontend/` — contact forms, login, CRUD create/edit views.
 
-Not for component file layout — see vulkano-frontend-component. Not for a11y attributes on the form (labels, `aria-invalid`) — see vulkano-frontend-a11y, apply both together.
+Not for component file layout — see vulkano-frontend-component.
 
 ## Required-field pattern
 
@@ -25,7 +25,7 @@ Not for component file layout — see vulkano-frontend-component. Not for a11y a
 - Every required field's label gets a red asterisk: reuse a shared `.field-required` (or equivalent BEM element) styled with the project's danger/error color token — never hardcode a hex/named red per view. Token name and scale (`--color-danger`, `--color-danger-500`, `--color-error`, whatever this project's own theme uses) is a project decision, not a framework-fixed name — check for an existing one first. **Neither the class nor a danger/error token exists in a fresh scaffold** (checked: no `frontend/**/*.scss` defines one) — the first form in a project defines both once, in a shared partial (e.g. `frontend/<entrypoint>/scss/_tokens.scss`, imported from `style.scss`), and every form after that reuses them.
 - Error message rendered inline below the input: `<span class="*__field-error">{{ fieldErrors.email }}</span>`.
 - Invalid input gets a `*__input--invalid` class for the red border.
-- Required inputs keep the native `required` attribute even though `novalidate` suppresses its browser UI — not redundant with `V.required(...)` in `formRules`: it stays for the accessibility tree, gives a quick visual signal in devtools without opening `formRules`, and a mismatch between the two (required in markup but not in rules, or vice versa) is a bug worth catching. See vulkano-frontend-a11y § Forms.
+- Required inputs keep the native `required` attribute even though `novalidate` suppresses its browser UI — not redundant with `V.required(...)` in `formRules`: it stays for the accessibility tree, gives a quick visual signal in devtools without opening `formRules`, and a mismatch between the two (required in markup but not in rules, or vice versa) is a bug worth catching.
 - No `frontend/<entrypoint>/views/Login/` exists in a fresh scaffold — it's not a file to go open and copy. Follow the `useFormValidation` + `formRules` + `fieldErrors` + `<span class="*__field-error">` + `*__input--invalid` shape from the Skeleton below instead; once a project's first login/form view exists, treat _that_ as the local reference for the next one.
 - `composables/useFormValidation.js` and `utils/validators.js` don't exist in a fresh scaffold either — the first form in a project creates them once (shared, not per-view), every form after reuses them.
 
@@ -172,15 +172,13 @@ Canonical rule lives in vulkano-frontend-component § "Installed UI library is n
 
 - `loading` state on submit: disabled/`is-loading` button, spinner if the action takes noticeable time.
 - Success/error flash message (or the UI kit's toast) uses a short transition (~150-250ms), never an instant jump.
-- Full rules (hover, `cursor: pointer`, shared utilities, GSAP/AOS policy): `references/AGENTS/MICROINTERACTIONS.md`.
+- Full rules (hover, `cursor: pointer`, shared utilities, GSAP/AOS policy): `references/AGENTS/FRONTEND.md` § Design patterns.
 
 ## After writing
 
-- Track both outcomes (`{section}_success` / `{section}_error`) per vulkano-frontend-analytics, unless the area's Analytics column in PROJECT.md is off.
-- Confirm a11y requirements (labels, `aria-invalid`, `aria-describedby`) per vulkano-frontend-a11y.
 - New/changed `validators.js` rule or `useFormValidation` behavior → test at `test/frontend/<entrypoint>/utils/validators.test.js` / `test/frontend/<entrypoint>/composables/useFormValidation.test.js` per vulkano-testing.
 - Visually verify in a browser: submit with empty fields, invalid values, and valid values.
 
 ## Reference
 
-The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>/views/Login/` to copy from in a fresh scaffold), vulkano-frontend-a11y § Forms for the a11y wiring side. `references/AGENTS/ACCESSIBILITY.md` (accessibility minimums, points to vulkano-frontend-a11y). This skill is the source of truth for form conventions — `references/AGENTS/FRONTEND.md` § Forms only points here.
+The Skeleton above (canonical pattern — no pre-existing `frontend/<entrypoint>/views/Login/` to copy from in a fresh scaffold). This skill is the source of truth for form code — `references/AGENTS/FRONTEND.md` § Forms holds only the rules.

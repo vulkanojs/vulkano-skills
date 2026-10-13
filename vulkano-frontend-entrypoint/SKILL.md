@@ -35,7 +35,7 @@ frontend/
     └── ...              # same shape
 ```
 
-See references/AGENTS/ENTRYPOINTS.md for the full rationale.
+Why one app per area: `references/AGENTS/ARCHITECTURE.md` § Entrypoints. Wiring rules: `references/AGENTS/BUILD.md`.
 
 ## Scaffolding a new entrypoint
 
@@ -68,7 +68,7 @@ frontend/<name>/
   ```
   Each key is a separate bundle, addressable from a template via `vite({ entry: '<key>', type: '...' })`, and its own `@<dir>` alias is derived automatically (see Alias per entrypoint above).
 - **`nodemon.json`** — no change needed. `ignore` already has `frontend/`, which covers every entrypoint under it.
-- **Backend template** — `app/views/_shared/templates/<name>.html`, a copy of `default.html` with its own `vite({ entry: '<name>', ... })` calls. Drop the SEO meta block if the area has SEO off (see vulkano-seo).
+- **Backend template** — `app/views/_shared/templates/<name>.html`, a copy of `default.html` with its own `vite({ entry: '<name>', ... })` calls. Drop the SEO meta block for a non-public area (admin, widget).
 - **Backend controller** — one per area (e.g. `AdminController.get`), rendering that area's own view (see vulkano-backend-controller):
   ```js
   module.exports = {
@@ -101,14 +101,6 @@ No `views/`/`components/`/`layouts/` folders unless the page's JS is genuinely s
 
 Wiring is otherwise identical — same `vite.entries.mjs` key, same `@<name>` alias, same `vite({ entry: '<name>', type: '...' })` calls in the backend template (see Wiring below), same HMR in dev. The only difference is what's on the other end of that bundle: a `createApp(App).mount('#app')` call for a Vue entry, vs. whatever plain DOM code this page needs for a vanilla one.
 
-## SEO / Analytics / Accessibility per area
-
-Every new entrypoint is a new "area" per PROJECT.md § Project requirements. Before considering the entrypoint done:
-
-1. Ask the user which kind of area this is (landing / landing+form / website / blog, embeddable widget, or CMS/admin panel) if not already stated.
-2. Map it to SEO/Analytics/Accessibility on/off per the existing rule in PROJECT.md.
-3. Add a row for it to the table in PROJECT.md § Project requirements, and show the user the result.
-
 ## After writing
 
 Vue entrypoint — do not report done until every box is true (a missing one is the most common miss: the new area works at its root URL but a hard refresh on any deeper URL returns an error):
@@ -125,4 +117,4 @@ Vue entrypoint — do not report done until every box is true (a missing one is 
 
 ## Reference
 
-references/AGENTS/ENTRYPOINTS.md, vulkano-frontend-router § Multiple entry points / Backend catch-all, vulkano-backend-controller, vulkano-seo, PROJECT.md § Project requirements.
+`references/AGENTS/BUILD.md`, vulkano-frontend-router § Multiple entry points / Backend catch-all, vulkano-backend-controller.

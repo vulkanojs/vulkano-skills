@@ -163,9 +163,9 @@ Handler signature is always `({ socket, body }, callback)`. Requires `app/config
 
 ## After writing
 
-- New/changed controller → add a test under `test/app/controllers/*.http.test.js` (see TESTING.md). API controllers assert the `res.vsr` envelope (`{ success, statusCode, data }`); view controllers assert the rendered HTML body.
+- New/changed controller → add a test under `test/app/controllers/*.http.test.js` (see vulkano-testing). API controllers assert the `res.vsr` envelope (`{ success, statusCode, data }`); view controllers assert the rendered HTML body.
 - Never `require()` a model or service — both are auto-loaded globals, reference by name (`Product`, `Upload`, ...).
-- New public/crawlable view → apply SEO essentials (`references/AGENTS/SEO.md`) unless that area's SEO column is off (see PROJECT.md § Project requirements).
+- New public/crawlable view → meta/sitemap wiring per `references/AGENTS/BACKEND.md` § SEO wiring.
 
 ## Handoff
 

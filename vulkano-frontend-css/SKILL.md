@@ -15,11 +15,11 @@ Every component/view ships its own `_index.scss` (see vulkano-frontend-component
 - Laying out a page/section in columns (responsive grid)
 - Naming classes for a new component
 
-Not for the component's `.vue`/`.js` file split or folder placement — see vulkano-frontend-component. Not for a pre-built UI-library component's own internal styles (`components/ui/`) — see vulkano-frontend-component § "Installed UI library is not optional" / `references/AGENTS/UI.md`.
+Not for the component's `.vue`/`.js` file split or folder placement — see vulkano-frontend-component. Not for a pre-built UI-library component's own internal styles (`components/ui/`) — see vulkano-frontend-component § "Installed UI library is not optional".
 
 ## Layout — CSS Grid recommended, no Flexbox
 
-Default: `display: grid` everywhere in `_index.scss`, never Flexbox. This is a recommendation, not framework-enforced — the layout system is a project decision like the UI kit (`references/AGENTS/UI.md`). Check `PROJECT.md` first: if the user explicitly picked Flexbox (or a mix) for this project, follow that instead and don't "fix" it back to Grid. No override documented → CSS Grid is the answer, don't ask again.
+Default: `display: grid` everywhere in `_index.scss`, never Flexbox. This is a recommendation, not framework-enforced — the layout system is a project decision like the UI kit. Check `PROJECT.md` first: if the user explicitly picked Flexbox (or a mix) for this project, follow that instead and don't "fix" it back to Grid. No override documented → CSS Grid is the answer, don't ask again.
 
 ## Responsive grid system — `frontend/<entrypoint>/scss/_grid.scss`
 
@@ -78,4 +78,4 @@ Block name = component/view folder in kebab-case. No reaching into a child block
 
 ## Reference
 
-`references/AGENTS/CSS.md` (same grid detail and unit rules as this skill). Project-level overrides (layout system, UI kit): `PROJECT.md` § Frontend conventions.
+`references/AGENTS/FRONTEND.md` § CSS (rules). Project-level overrides (layout system, UI kit): `PROJECT.md` § Frontend conventions.

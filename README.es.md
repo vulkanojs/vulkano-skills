@@ -12,15 +12,12 @@ Cada carpeta en la raíz del repo es un skill de Claude Code autocontenido (`SKI
 - `vulkano-backend-views` — decidir entre vista HTML server-rendered vs respuesta JSON API.
 - `vulkano-backend-views-handlebars` — layouts/partials/helpers Handlebars.
 - `vulkano-backend-views-nunjucks` — layouts/partials/filters Nunjucks (motor por defecto).
-- `vulkano-frontend-a11y` — mínimos de accesibilidad para imágenes, navegación, forms.
-- `vulkano-frontend-analytics` — convenciones de tracking GA4/GTM.
 - `vulkano-frontend-component` — separación de archivos componente/vista Vue, Composition API, kit de UI instalado.
 - `vulkano-frontend-css` — layout CSS Grid, sistema de grid responsive, naming BEM.
 - `vulkano-frontend-entrypoint` — scaffold de nuevo entrypoint, app Vue o bundle JS vanilla para página server-rendered (CMS/admin, app adicional).
 - `vulkano-frontend-form` — marcadores de campo requerido, validación solo JS, patrón fieldErrors.
 - `vulkano-frontend-router` — rutas Vue Router, guards de auth, fetch de usuario actual.
 - `vulkano-frontend-store` — Pinia store por concern, excepción `useAppStore`.
-- `vulkano-seo` — `res.locals.seo`, robots.txt/sitemap.xml, JSON-LD.
 - `vulkano-template-update` — sincroniza los docs de agente de un proyecto (`AGENTS.md`, `references/AGENTS/`, skills) con el último template de Vulkano, migrando `PROJECT.md` sin tocar los valores del proyecto.
 - `vulkano-testing` — layout Vitest, gate `TEST_MONGO_URI`, patrones de test por capa.
 
@@ -41,9 +38,9 @@ Para traer actualizaciones a un proyecto que ya tiene el submódulo:
 git submodule update --remote --merge .claude/skills/vulkano-skills
 ```
 
-## La duplicación con `references/AGENTS/*.md` es intencional
+## Skills vs `references/AGENTS/*.md`
 
-Cierto contenido mandatorio (ej. `ENTRYPOINTS.md`, pasos de wiring) se repite a propósito tanto en `references/AGENTS/*.md` del proyecto consumidor como en el skill correspondiente acá. Este submódulo puede eliminarse o no estar instalado en un proyecto dado, así que `references/AGENTS/*.md` del proyecto debe quedar mandatorio y autosuficiente por sí solo — no puede depender de este submódulo para info crítica. Los skills acá son la versión detallada/accionable; `references/AGENTS/*.md` es el respaldo. No colapsar esa duplicación a un puntero.
+Sin duplicación: `references/AGENTS/*.md` del proyecto (ARCHITECTURE, BACKEND, FRONTEND, BUILD…) guarda las reglas cortas; las skills de acá guardan el código de ejemplo y el paso a paso. Una skill enlaza al doc de reglas en vez de repetirlo. Si este submódulo no está instalado, el fallback es `AGENTS.md` § Minimum rules del proyecto.
 
 ## Agregar o editar un skill
 

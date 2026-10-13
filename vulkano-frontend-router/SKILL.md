@@ -185,4 +185,4 @@ router.beforeEach(async (to) => {
 
 ## Reference
 
-`references/AGENTS/ROUTING.md` (backend catch-all, cross-cutting), `references/AGENTS/FRONTEND.md` § Security, vulkano-backend-auth (backend session-check convention).
+`references/AGENTS/BACKEND.md` § Routes (backend catch-all), `references/AGENTS/FRONTEND.md` § Routes, vulkano-backend-auth (backend session-check convention).

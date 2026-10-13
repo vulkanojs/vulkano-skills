@@ -82,4 +82,4 @@ export const useAppStore = defineStore('app', () => {
 
 ## Reference
 
-`references/AGENTS/STORE.md` (full detail, same content as this skill).
+`references/AGENTS/FRONTEND.md` § Store (rules), vulkano-testing (store tests).

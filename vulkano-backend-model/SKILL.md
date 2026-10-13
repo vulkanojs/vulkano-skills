@@ -147,7 +147,7 @@ Every model gets `_buildPopulate(props, extra)`, `_parsePopulateEntries(props)`,
 Do not report done until every `[ ]` below is true:
 
 - Changing an existing model's method signature, `attributes`, or return shape → grep the method/field name across `app/controllers/`, `app/services/`, `app/config/sockets/` and confirm every caller still gets what it expects.
-- [ ] **Model test exists** at `test/app/models/<Name>.test.js` (see TESTING.md) — assert business rules/validation directly against the model (`.rejects.toThrow(...)` for invalid input). Not optional: do not report done without it, and list its path in the handoff.
+- [ ] **Model test exists** at `test/app/models/<Name>.test.js` (see vulkano-testing) — assert business rules/validation directly against the model (`.rejects.toThrow(...)` for invalid input). Not optional: do not report done without it, and list its path in the handoff.
 - Constants shared across models/services/controllers go in `app/config/common.js` (`app.config.common.X`), not hardcoded per-model.
 
 ## Handoff

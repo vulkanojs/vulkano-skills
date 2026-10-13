@@ -15,7 +15,7 @@ description: Use when creating, editing, or reviewing a Vue component or view in
 - Deciding `views/` vs `components/` placement, or file/folder naming
 - Picking/checking the installed UI library for a new input/dialog/confirm
 
-Not for form validation UI — see vulkano-frontend-form. Not for route/auth-guard wiring — see vulkano-frontend-router. Not for a Pinia store — see vulkano-frontend-store. Not for `.scss` styling (Grid/BEM) — see vulkano-frontend-css. Not for analytics wiring — see vulkano-frontend-analytics. Not for accessibility — see vulkano-frontend-a11y. Not for backend — see vulkano-backend-* skills.
+Not for form validation UI — see vulkano-frontend-form. Not for route/auth-guard wiring — see vulkano-frontend-router. Not for a Pinia store — see vulkano-frontend-store. Not for `.scss` styling (Grid/BEM) — see vulkano-frontend-css. Not for backend — see vulkano-backend-* skills.
 
 ## Before implementing
 
@@ -92,7 +92,7 @@ Never `src="@website/..."`/`src="@admin/..."`, a relative `import`, or any other
 <img src="/img/logo.png" alt="Vulkano logo" />
 ```
 
-`/img/`, `/fonts/`, `/files/` — never `public/` in the path, never through an entrypoint alias (`@website`, `@admin`). See `references/AGENTS/ASSETS.md` for namespacing and `.webp` optimization.
+`/img/`, `/fonts/`, `/files/` — never `public/` in the path, never through an entrypoint alias (`@website`, `@admin`). See `references/AGENTS/FRONTEND.md` § Assets for namespacing and `.webp` optimization.
 
 ## UI reference page
 
@@ -101,7 +101,7 @@ Every entrypoint keeps a dev-only UI reference view — `frontend/<entrypoint>/v
 Two kinds of components live behind it, both get an entry:
 
 - **Custom components** (Datepicker, Textarea, Select, Modal, Button, etc.) — code lives in `components/<Name>/`.
-- **Vendored UI-library components** (shadcn-vue, Element Plus — see `references/AGENTS/UI.md`) — code lives in `components/ui/`.
+- **Vendored UI-library components** (shadcn-vue, Element Plus) — code lives in `components/ui/`.
 
 `components/` (and `components/ui/`) hold the code; `views/UI/Index.vue` holds nothing but examples — it never re-implements a component, only imports and demonstrates it.
 
@@ -109,7 +109,7 @@ Two kinds of components live behind it, both get an entry:
 
 ## Installed UI library is not optional — check `package.json` before native HTML
 
-The library itself isn't fixed by this framework — `PROJECT.md` § Frontend conventions decides shadcn-vue, Element Plus, PrimeVue, or any other (see `references/AGENTS/UI.md`). Blank/not set there → no UI library installed, check `package.json` the long way below. The rule is library-agnostic: **whichever one this project has installed, every input, button, dialog, and confirm/alert MUST go through it, not raw HTML5 or a native browser dialog.** Fall back to plain HTML5 only for a component that specific library genuinely doesn't provide.
+The library itself isn't fixed by this framework — `PROJECT.md` § Frontend conventions decides shadcn-vue, Element Plus, PrimeVue, or any other. Blank/not set there → no UI library installed, check `package.json` the long way below. The rule is library-agnostic: **whichever one this project has installed, every input, button, dialog, and confirm/alert MUST go through it, not raw HTML5 or a native browser dialog.** Fall back to plain HTML5 only for a component that specific library genuinely doesn't provide.
 
 Detect which one before assuming none is installed — check `package.json` dependencies and, for CLI-scaffolded kits, their own marker file (e.g. shadcn-vue's `components.json` at repo root, always created by `shadcn-vue init` regardless of which underlying primitives library it pulled that version — `reka-ui` today, `radix-vue` in older setups — don't grep for a specific peer-dep name, it drifts). An empty/missing entry in `views/UI/Index.vue` is not license to fall back — it means the component hasn't been added to this project yet:
 
@@ -140,9 +140,8 @@ CSS Grid only (never Flexbox), the responsive grid system (`.row`/`.column`), an
 - Add the component's `@import './X/_index.scss';` line to the parent `_index.scss` aggregator.
 - New reusable component → add its section to the UI reference page (`frontend/<entrypoint>/views/UI/Index.vue`).
 - New/edited store → see vulkano-frontend-store § After writing.
-- Check analytics (vulkano-frontend-analytics) and accessibility (vulkano-frontend-a11y) requirements for the area before considering done.
 - Visually verify in a browser per `references/AGENTS/DEVTOOLS.md`.
 
 ## Reference
 
-`references/AGENTS/FRONTEND.md` (full detail), `references/AGENTS/ARCHITECTURE.md`.
+`references/AGENTS/FRONTEND.md` (rules), `references/AGENTS/ARCHITECTURE.md`.

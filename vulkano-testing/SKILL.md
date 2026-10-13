@@ -87,4 +87,4 @@ No Playwright/Cypress installed. For end-to-end verification of a user flow, dri
 
 ## Reference
 
-`references/AGENTS/TESTING.md` (full detail), `test/app/controllers/Home.http.test.js` (existing worked example), vulkano-backend-model, vulkano-backend-controller, vulkano-backend-auth (auth-flow test coverage: `req.auth`, JWT cookie).
+`test/app/controllers/Home.http.test.js` (existing worked example), vulkano-backend-model, vulkano-backend-controller, vulkano-backend-auth (auth-flow test coverage: `req.auth`, JWT cookie).

@@ -1,6 +1,6 @@
 {
   "name": "vulkano-skills",
-  "description": "Vulkano Framework project skills — backend controller/model/auth/views conventions, frontend component/form/router/entrypoint/a11y patterns, SEO, and testing.",
+  "description": "Vulkano Framework project skills — backend controller/model/auth/views conventions, frontend component/css/form/router/store/entrypoint patterns, and testing.",
   "version": "1.0.0",
   "skills": [
     "./vulkano-backend-auth",
@@ -9,15 +9,12 @@
     "./vulkano-backend-views",
     "./vulkano-backend-views-handlebars",
     "./vulkano-backend-views-nunjucks",
-    "./vulkano-frontend-a11y",
-    "./vulkano-frontend-analytics",
     "./vulkano-frontend-component",
     "./vulkano-frontend-css",
     "./vulkano-frontend-entrypoint",
     "./vulkano-frontend-form",
     "./vulkano-frontend-router",
     "./vulkano-frontend-store",
-    "./vulkano-seo",
     "./vulkano-template-update",
     "./vulkano-testing"
   ]
