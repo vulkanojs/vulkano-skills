@@ -53,7 +53,7 @@ export function useFormValidation(rules) {
       let error = '';
 
       for (const validator of validators) {
-        error = validator(formData[field]);
+        error = validator(formData[field]) || ''; // validators return null when valid
         if (error) {
           break;
         }
