@@ -69,7 +69,7 @@ Required for any non-root entrypoint: `createWebHistory()` defaults to base `/`,
   };
   ```
   Each key is a separate bundle, addressable from a template via `vite({ entry: '<key>', type: '...' })`, and its own `@<dir>` alias is derived automatically (see Alias per entrypoint above).
-- **`nodemon.json`** — no change needed. `ignore` already has `frontend/`, which covers every entrypoint under it.
+- **`nodemon.json`** — no change needed. It only watches `app/`, `app.js` and `.env`, so frontend edits never restart Express.
 - **Backend template** — `app/views/_shared/templates/<name>.html`, a copy of `default.html` with its own `vite({ entry: '<name>', ... })` calls. Drop the SEO meta block for a non-public area (admin, widget).
 - **Backend controller** — one per area (e.g. `AdminController.get`), rendering that area's own view (see vulkano-backend-controller):
   ```js
