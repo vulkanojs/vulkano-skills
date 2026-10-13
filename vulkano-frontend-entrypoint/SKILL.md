@@ -1,6 +1,6 @@
 ---
 name: vulkano-frontend-entrypoint
-description: Use when creating a brand-new frontend entrypoint in this Vulkano framework project — a Vue SPA (CMS/admin panel, a custom landing, or any additional app) or a vanilla-JS bundle for a fully server-rendered page — covering the frontend/<name>/ folder scaffold, Vite/nodemon wiring, the backend template/controller/catch-all, and the SEO/Analytics/Accessibility area decision.
+description: Use when creating, renaming, or removing a frontend entrypoint in this Vulkano framework project — a Vue SPA (CMS/admin panel, a custom landing, or any additional app) or a vanilla-JS bundle for a fully server-rendered page — covering the frontend/<name>/ folder scaffold, the vite.entries.mjs key, and the backend layout/controller/catch-all.
 ---
 
 # Frontend Entrypoint
