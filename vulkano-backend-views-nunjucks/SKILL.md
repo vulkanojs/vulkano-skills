@@ -130,8 +130,10 @@ Locale files: `app/config/locales/<lang>.js`, keyed by filename, deep-merged wit
 
 Not built in — Vulkano ships no formatter (no `date`/`currency`/`number` filter). Write one as a plain function and drop it in the right folder; it's auto-loaded, no registration code:
 
-- `app/config/views/helpers/<name>.js` — function-call syntax: `{{ name(args) }}`.
-- `app/config/views/filters/<name>.js` — same export, but also usable as a pipe: `{{ value | name(args) }}`.
+- `app/config/views/helpers/<name>.js` — registered as a global: call syntax only, `{{ name(value, args) }}`.
+- `app/config/views/filters/<name>.js` — registered as a filter: pipe syntax only, `{{ value | name(args) }}` (the piped value is the first argument).
+
+Pick the folder by how the template should read — a filter called as `{{ name(x) }}` (or a helper piped) fails as undefined.
 
 ```js
 // app/config/views/helpers/currency.js
