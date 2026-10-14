@@ -9,7 +9,7 @@ description: Use when creating, renaming, or removing a frontend entrypoint in t
 
 A Vulkano project can have more than one Vue app — public front, CMS/admin, a one-off landing. Each gets its own Vite build entry and its own backend template + controller + catch-all route. This skill is for creating a **new** entrypoint. Not for adding a route inside one that already exists (see vulkano-frontend-router). Not for a component/view's own internals (see vulkano-frontend-component).
 
-**An entrypoint isn't always a Vue SPA.** `vite.entries.mjs`'s `entries` map is just `{ name: 'path/to/file.js' }` — `vite.config.mjs` derives the bundle, alias, and manifest entry from that path alone, with no Vue requirement (the `vue()` plugin only activates for `.vue` files it actually encounters). A fully server-rendered area (Nunjucks/Handlebars, no client-side routing) can get its own entry that's plain JS — no `App.vue`/`routes.js`/Pinia — and still gets Vite's dev-server HMR and a production bundle. See § Vanilla-JS entrypoint below.
+**An entrypoint isn't always a Vue SPA.** `vite.entries.mjs`'s `entries` map is just `{ name: 'path/to/file.js' }` — `vite.config.ts` derives the bundle, alias, and manifest entry from that path alone, with no Vue requirement (the `vue()` plugin only activates for `.vue` files it actually encounters). A fully server-rendered area (Nunjucks/Handlebars, no client-side routing) can get its own entry that's plain JS — no `App.vue`/`routes.js`/Pinia — and still gets Vite's dev-server HMR and a production bundle. See § Vanilla-JS entrypoint below.
 
 ## When to use
 
@@ -58,7 +58,7 @@ frontend/<name>/
   views/DesignSystem/ # /design-system, dev only
 ```
 
-**Alias per entrypoint:** `vite.config.mjs` derives one `resolve.alias` per entrypoint automatically from `vite.entries.mjs` — `@<dir>` for whatever folder a given entry lives under (e.g. `frontend/website/app.js` → `@website`, `frontend/admin/app.js` → `@admin`). Adding the key to `vite.entries.mjs` (see Wiring below) is the only step; no separate alias edit. Use **relative imports** inside each entrypoint (`./style.scss`, `./routes`, `./App.vue`, `./Api`) for its own files; reach for the entrypoint's own alias only when a deep import reads clearer absolute (e.g. `@admin/components/ui/Button.vue` from a nested file). Never reference another entrypoint's alias (`@website` from inside `frontend/admin/`, or vice versa) — entrypoints stay isolated: no shared folder, no cross-entrypoint imports; each one owns its code (`Api.js`, utils, components).
+**Alias per entrypoint:** `vite.config.ts` derives one `resolve.alias` per entrypoint automatically from `vite.entries.mjs` — `@<dir>` for whatever folder a given entry lives under (e.g. `frontend/website/app.js` → `@website`, `frontend/admin/app.js` → `@admin`). Adding the key to `vite.entries.mjs` (see Wiring below) is the only step; no separate alias edit. Use **relative imports** inside each entrypoint (`./style.scss`, `./routes`, `./App.vue`, `./Api`) for its own files; reach for the entrypoint's own alias only when a deep import reads clearer absolute (e.g. `@admin/components/ui/Button.vue` from a nested file). Never reference another entrypoint's alias (`@website` from inside `frontend/admin/`, or vice versa) — entrypoints stay isolated: no shared folder, no cross-entrypoint imports; each one owns its code (`Api.js`, utils, components).
 
 ### Router base path
 
@@ -66,7 +66,7 @@ Required for any non-root entrypoint: `createWebHistory()` defaults to base `/`,
 
 ## Wiring
 
-- **`vite.entries.mjs`** — add a key to the `entries` map (the single source of truth `vite.config.mjs` reads the per-entry build (`environments`) and `resolve.alias` from — no `vite.config.mjs` edit needed):
+- **`vite.entries.mjs`** — add a key to the `entries` map (the single source of truth `vite.config.ts` reads the per-entry build (`environments`) and `resolve.alias` from — no `vite.config.ts` edit needed):
   ```js
   export const entries = {
     website: 'frontend/website/app.js',
@@ -117,8 +117,8 @@ Vue entrypoint — do not report done until every box is true (a missing one is 
 - [ ] `createWebHistory('/<name>')` in `app.js`.
 - [ ] `curl -i localhost:<PORT>/<name>` and `curl -i localhost:<PORT>/<name>/anything` both return the app shell (200).
 
-- Confirm the new key was added to `vite.entries.mjs` — its `@<folder>` alias and its `environments` build entry in `vite.config.mjs` both derive from it automatically, nothing else to edit.
-- Run `vp build` and confirm the new entry appears in `public/.vite/manifest.json` — each entry builds as its own isolated Rolldown pass (Vite's Environment API, see `vite.config.mjs`) so it never shares a chunk with another entry, then all entries' manifests merge into that one file.
+- Confirm the new key was added to `vite.entries.mjs` — its `@<folder>` alias and its `environments` build entry in `vite.config.ts` both derive from it automatically, nothing else to edit.
+- Run `vp build` and confirm the new entry appears in `public/.vite/manifest.json` — each entry builds as its own isolated Rolldown pass (Vite's Environment API, see `vite.config.ts`) so it never shares a chunk with another entry, then all entries' manifests merge into that one file.
 - Vue entrypoint: hit the new area's path in a browser; confirm a hard refresh doesn't 404 (catch-all working, not just in-app navigation) AND the view actually renders — a 200 with a blank page is the tell for a missing/wrong `createWebHistory(base)` (see Router base path above), not a catch-all problem.
 - Vanilla-JS entrypoint: confirm the bundle actually loads on the rendered page (Network tab) and, in dev, that editing `app.js` HMR-updates without a full page reload — no catch-all/router check needed, it's not a client-routed app.
 

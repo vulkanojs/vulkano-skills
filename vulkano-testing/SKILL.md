@@ -77,7 +77,7 @@ vp test          # full suite once — runs without a DB if TEST_MONGO_URI unset
 vp test watch    # watch mode
 ```
 
-No coverage threshold or CI script configured — don't claim one exists without checking `package.json`/`vite.config.mjs` first.
+No coverage threshold or CI script configured — don't claim one exists without checking `package.json`/`vite.config.ts` first.
 
 ## Browser E2E — not a CI suite
 
