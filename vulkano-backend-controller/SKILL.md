@@ -71,25 +71,9 @@ Only add an entry to `app/config/routes.js` when the convention can't express it
 
 ## Create + edit → one method/route, not two
 
-Same rule on both sides of a form: don't split create and edit into separate methods/controllers just because one has an `:id` and the other doesn't.
+Don't split create and edit into separate methods/controllers: API uses `post` + `'put :id'` on the same controller; a view controller renders one template for both, branching on `:id`.
 
-- **API controller**: already the natural shape — `post` (create) and `'put :id'` (update) are two method keys on the _same_ controller calling the _same_ model, shown above. Don't add a separate `CreateController`/`EditController`.
-- **View controller** serving a form page (`/products/create`, `/products/edit/:id`) — one method renders the same template for both, branching only on whether `:id` is present to prefill data:
-
-```js
-// app/controllers/ProductsController.js
-module.exports = {
-  'get create': (req, res) => res.render('products/form.html', { product: null }),
-  // verb + one path token: 'get edit :id' would register /products/edit and drop :id
-  'get edit/:id': (req, res) => {
-    Product.getProduct(req.params.id)
-      .then((product) => res.render('products/form.html', { product }))
-      .catch(() => res.status(404).render('_shared/errors/404.html'));
-  }
-};
-```
-
-Matches the frontend's single `Form.vue` (branches on route `:id` the same way — see vulkano-frontend-router § Create + Edit) — one template/form markup reused for both actions instead of duplicating it.
+Read [references/create-edit.md](references/create-edit.md) when wiring a create/edit form page or API.
 
 ## View vs API response
 
@@ -178,25 +162,9 @@ A `:key` not listed in `subdocs` → 404; a method not listed for that key → 4
 
 ## Sockets
 
-1. Register the event in `app/config/sockets/events.js`:
+Register the event in `app/config/sockets/events.js` (`eventName: 'sockets.NameController.method'`), implement it in `app/controllers/sockets/NameController.js` with signature `({ socket, body }, callback)`; needs `app/config/sockets/config.js` with `enabled: true`.
 
-```js
-module.exports = {
-  eventName: 'sockets.NameController.method'
-};
-```
-
-2. Implement it in `app/controllers/sockets/NameController.js`:
-
-```js
-module.exports = {
-  method({ socket, body }, callback) {
-    callback({/* result */});
-  }
-};
-```
-
-Handler signature is always `({ socket, body }, callback)`. Requires `app/config/sockets/config.js` with `enabled: true` (adapter defaults to in-memory; redis/mongodb available). Optional `app/config/sockets/cors.js` and `app/config/sockets/middlewares/auth.js` for origin/auth checks.
+Read [references/sockets.md](references/sockets.md) when adding or editing a socket event.
 
 ## After writing
 

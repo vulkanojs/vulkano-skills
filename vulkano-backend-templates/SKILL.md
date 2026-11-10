@@ -1,6 +1,6 @@
 ---
 name: vulkano-backend-templates
-description: Use when creating or editing a server-rendered backend view, layout, partial, or error template under app/views in this Vulkano framework project (Nunjucks by default, or Handlebars if app/config/views.js sets it) — layout, partials, res.render locals, paginated lists, SEO meta block, i18n t(), custom formatting helpers/filters (dates, numbers, currency), and Vite asset injection.
+description: Use when creating or editing a server-rendered backend view, layout, partial, or error template under app/views in this Vulkano framework project (Nunjucks by default, or Handlebars if app/config/views.js sets it) — layout, partials, locals, pagination, SEO meta, i18n, formatting filters, Vite assets.
 ---
 
 # Backend Templates (Nunjucks / Handlebars)

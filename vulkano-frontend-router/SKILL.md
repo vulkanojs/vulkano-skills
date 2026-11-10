@@ -1,6 +1,6 @@
 ---
 name: vulkano-frontend-router
-description: Use when adding a Vue Router route, an auth/login guard, or a route-based redirect inside an existing entrypoint in this Vulkano framework project's frontend/ — route↔view naming, resource/action file naming, the SPA catch-all on the backend, and fetching the current user (never caching it client-side). For creating a brand-new entrypoint (CMS/admin, a custom landing, etc.), see vulkano-frontend-entrypoint instead.
+description: "Use when adding a Vue Router route, an auth/login guard, or a route-based redirect inside an existing entrypoint in this Vulkano framework project's frontend/ — route↔view naming, resource/action file naming, the SPA catch-all on the backend, and fetching the current user (never cached client-side). New entrypoint: vulkano-frontend-entrypoint."
 ---
 
 # Frontend Router
@@ -85,60 +85,9 @@ This only replaces the leaf filename — it does not apply to plain single-segme
 
 ### Create + Edit → one `Form.vue`, not `Create.vue`/`Edit.vue`
 
-Don't split create and edit into two separate views — they're the same form, branching only on whether `:id` is present in the route. One `Form.vue` (routed from both `/product/create` and `/product/edit/:id`) avoids duplicating the whole form markup/validation across two files:
+One `Form.vue` routed from both `/product/create` and `/product/edit/:id`, branching only on whether `:id` is present (`$api.put` vs `$api.post`).
 
-```js
-// Form.js
-import { ref, onMounted, getCurrentInstance } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-export default {
-  setup() {
-    const { $api } = getCurrentInstance().proxy || {};
-    const route = useRoute();
-    const router = useRouter();
-    const id = route.params.id; // undefined on /product/create
-    const form = ref({ name: '', price: 0 });
-    const isSubmitting = ref(false);
-    const error = ref('');
-
-    async function getProduct(id) {
-      try {
-        form.value = await $api.get(`/product/${id}`); // prefill for edit
-      } catch (err) {
-        error.value = err.message;
-      }
-    }
-
-    onMounted(async () => {
-      if (!id) return;
-      await getProduct(id);
-    });
-
-    async function submit() {
-      // validate first — useFormValidation, see vulkano-frontend-form (skipped here)
-      isSubmitting.value = true;
-      error.value = '';
-      try {
-        if (id) {
-          await $api.put(`/product/${id}`, form.value);
-        } else {
-          await $api.post('/product', form.value);
-        }
-        router.push('/product/list');
-      } catch (err) {
-        error.value = err.message; // backend error.detail
-      } finally {
-        isSubmitting.value = false;
-      }
-    }
-
-    return { form, isSubmitting, error, submit };
-  }
-};
-```
-
-Only the `:id` branching is router-specific — fields, validation, flash and loading follow vulkano-frontend-form. Same rule applies to the backend controller (`PUT`/`POST` split on `:id`, not two controllers) — see vulkano-backend-controller.
+Read [references/create-edit-form.md](references/create-edit-form.md) when writing a create/edit view.
 
 ## NotFound route + backend catch-all
 
@@ -161,75 +110,9 @@ Missing backend half → `<router-link>` works but a hard refresh 404s.
 
 ## Auth guard — never cache user client-side
 
-No `localStorage`/`sessionStorage` for the token or the user object — both are XSS-exposed. The JWT lives in an `httpOnly` cookie (set by the backend on login) — the frontend never reads or stores it directly. See vulkano-backend-auth for the cookie/`AuthController` convention on the backend side.
+No `localStorage`/`sessionStorage` for the token or user; JWT lives in an `httpOnly` cookie. Mark protected routes `meta: { auth: true }` and re-fetch the current user (`GET /api/auth/current`) on each navigation in `router.beforeEach`. The guard is UX only — the backend enforces auth.
 
-Mark protected routes with `meta: { auth: true }` and re-fetch the current user on each navigation to one — never cache it in a store across navigations. `to.meta` merges parent metas, so a whole area (e.g. admin) is protected by putting `auth: true` on its `Layout` route once.
-
-```js
-// frontend/<entrypoint>/routes.js
-import { createRouter } from 'vue-router';
-import Api from './Api'; // no component instance in a guard — import, not $api
-
-import Layout from './layouts/Layout.vue';
-import Login from './views/Login/Index.vue';
-import Dashboard from './views/Dashboard/Index.vue';
-
-const routes = [
-  { path: '/login', component: Login },
-  {
-    path: '/',
-    component: Layout,
-    meta: { auth: true }, // every child requires a session
-    children: [{ path: '', component: Dashboard }]
-  }
-];
-
-export default (history) => {
-  const router = createRouter({ history, routes });
-
-  router.beforeEach(async (to) => {
-    const isLogin = to.path.startsWith('/login'); // also /login/2fa, /login/forgot…
-    if (!to.meta.auth && !isLogin) {
-      return true; // public route
-    }
-
-    const user = await Api.get('/auth/current').catch(() => null); // 401 → null
-
-    if (!user && !isLogin) {
-      return { path: '/login', query: { redirect: to.fullPath } };
-    }
-    if (user && isLogin) {
-      return to.query.redirect || '/';
-    }
-    return true;
-  });
-
-  return router;
-};
-```
-
-Entrypoint entirely behind login (e.g. admin) — same guard without the `meta` check: every route except `/login*` requires a session, so nothing needs marking:
-
-```js
-router.beforeEach(async (to) => {
-  const isLogin = to.path.startsWith('/login');
-  const user = await Api.get('/auth/current').catch(() => null);
-
-  if (!user && !isLogin) {
-    return '/login';
-  }
-  if (user && isLogin) {
-    return '/';
-  }
-  return true;
-});
-```
-
-Use `meta.auth` when the entrypoint mixes public and private routes (e.g. `website` with a members area); use the whole-area guard when nothing is public.
-
-The guard is UX only — the real boundary is the backend: every `/api` route a protected view calls must require the JWT (`app/config/express/jwt.js`, see vulkano-backend-auth).
-
-`GET /api/auth/current` is the backend's session-check endpoint — see vulkano-backend-auth for the `AuthController` convention it expects (`login`/`logout`/`current` method keys).
+Read [references/auth-guard.md](references/auth-guard.md) when writing the guard.
 
 ## After writing
 

@@ -50,16 +50,16 @@ Mirrors `frontend/`'s own convention (see vulkano-frontend-entrypoint): `test/fr
 
 ## Patterns by test type
 
-| Type                     | Path                                                       | Pattern                                                                                                                                                                                                                                                                                                           |
-| ------------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Model                    | `test/app/models/*.test.js`                                | `beforeAll(() => waitForReady())`, `afterEach(() => dbCleanup.clearCollections('Name'))`, assert business rules directly (`.rejects.toThrow(...)` for invalid input)                                                                                                                                              |
-| Controller/HTTP          | `test/app/controllers/*.http.test.js`                      | Same setup; hit the real running app with native `fetch` against `http://localhost:${process.env.PORT}` — no `supertest`. API: assert `res.vsr()` envelope `{ success, statusCode, data }`. View: assert rendered HTML body                                                                                       |
-| Service                  | `test/app/services/*.test.js`                              | Same boot/mock pattern, call the function directly (no HTTP)                                                                                                                                                                                                                                                      |
-| Middleware               | `test/app/config/middlewares/*.test.js`                    | Unit-test with mock `req`/`res`/`next` for pure logic, OR verify end-to-end through a controller/HTTP test                                                                                                                                                                                                        |
-| Integration              | `test/app/integration/*.test.js`                           | Full business flow across models (signup → login → protected route); factory helpers from `test/helpers/`; clear every touched collection in dependency order                                                                                                                                                     |
-| Script                   | `test/scripts/<script>.test.js`                            | Plain unit tests, no boot/DB, no `TEST_MONGO_URI` needed unless the script itself touches a model                                                                                                                                                                                                                 |
-| Frontend store           | `test/frontend/<entrypoint>/store/*.test.js`               | No app boot/DB; `createPinia()` + `setActivePinia()` in `beforeEach`; `vi.mock` the entrypoint's `Api.js` — never hit real network; shim browser globals or mark `// @vitest-environment jsdom` if a real DOM is needed                                                                                           |
-| Frontend composable/util | `test/frontend/<entrypoint>/{composables,utils}/*.test.js` | Plain unit test, no app boot/DB, no Pinia, no `jsdom` unless the composable touches the DOM; call the exported function(s) directly with fixture input, assert the returned value (e.g. `V.required('msg')('')` → `'msg'`; `useFormValidation(rules).validate({ email: '' })` → `false`, `fieldErrors.email` set) |
+Read the file for the layer you are testing:
+
+- Model (`test/app/models/*.test.js`) → [references/model.md](references/model.md)
+- Controller/HTTP (`test/app/controllers/*.http.test.js`) → [references/controller-http.md](references/controller-http.md)
+- Service (`test/app/services/*.test.js`) → [references/service.md](references/service.md)
+- Middleware (`test/app/config/middlewares/*.test.js`) → [references/middleware.md](references/middleware.md)
+- Integration (`test/app/integration/*.test.js`) → [references/integration.md](references/integration.md)
+- Script (`test/scripts/<script>.test.js`) → [references/script.md](references/script.md)
+- Frontend store (`test/frontend/<entrypoint>/store/*.test.js`) → [references/frontend-store.md](references/frontend-store.md)
+- Frontend composable/util (`test/frontend/<entrypoint>/{composables,utils}/*.test.js`) → [references/frontend-composable-util.md](references/frontend-composable-util.md)
 
 Mock outbound external calls (`ApiClient`, third-party APIs) with `vi.spyOn(...).mockResolvedValue(...)`, restored in `afterEach` — never hit a real third-party endpoint from a test.
 

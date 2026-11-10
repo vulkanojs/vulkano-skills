@@ -1,6 +1,6 @@
 ---
 name: vulkano-frontend-component
-description: Use when creating, editing, or reviewing a Vue component or view in this Vulkano framework project's frontend/ folder — .vue/.js/.scss file splitting, Composition API, views/ vs components/ placement, route↔view naming, and which UI kit (shadcn-vue/Element Plus, or whichever the project uses) owns inputs, dialogs, and confirm/alert. MANDATORY before writing any delete/confirm action or `window.confirm`/`window.alert`/`window.prompt` call, even outside a form.
+description: Use when creating or editing a Vue component or view in this Vulkano project's frontend/ — .vue/.js/.scss split, Composition API, views/ vs components/, route↔view naming, which UI kit owns inputs, dialogs and confirm/alert (never window.confirm/alert/prompt).
 ---
 
 # Frontend Component
@@ -14,6 +14,7 @@ description: Use when creating, editing, or reviewing a Vue component or view in
 - New view/component needed under `frontend/<entrypoint>/views/` or `frontend/<entrypoint>/components/`
 - Deciding `views/` vs `components/` placement, or file/folder naming
 - Picking/checking the installed UI library for a new input/dialog/confirm
+- MANDATORY before writing any delete/confirm action or `window.confirm`/`window.alert`/`window.prompt` call, even outside a form
 
 Not for form validation UI — see vulkano-frontend-form. Not for route/auth-guard wiring — see vulkano-frontend-router. Not for a Pinia store — see vulkano-frontend-store. Not for `.scss` styling (Grid/BEM) — see vulkano-frontend-css. Not for backend — see vulkano-backend-* skills.
 
@@ -94,50 +95,9 @@ export default {
 
 ## List view — 4 states
 
-Every list (or any fetched view) renders loading, error, empty and data — never a blank area. `getAll` resolves to a page object: read `.items` (+ `page`, `totalPages`…); a bare array only when the request sent `?page=all`.
+Every list/fetched view renders loading, error, empty and data — never a blank area. `getAll` returns a page object: read `.items`.
 
-```js
-// views/Product/List.js
-import { ref, onMounted, getCurrentInstance } from 'vue';
-
-export default {
-  setup() {
-    const { $api } = getCurrentInstance().proxy || {};
-    const items = ref([]);
-    const isLoading = ref(false);
-    const error = ref('');
-
-    async function load() {
-      isLoading.value = true;
-      error.value = '';
-      try {
-        items.value = (await $api.get('/product')).items ?? []; // Api.js resolves {} when data is empty
-      } catch (err) {
-        error.value = err.message; // Api.js: backend error.detail, status 0 = network
-      } finally {
-        isLoading.value = false;
-      }
-    }
-
-    onMounted(load);
-
-    return { items, isLoading, error, load };
-  }
-};
-```
-
-<!-- prettier-ignore -->
-```html
-<!-- views/Product/List.vue -->
-<p v-if="isLoading" class="products__loading">Loading…</p>
-<div v-else-if="error" class="products__error" role="alert">
-  {{ error }} <button type="button" @click="load">Retry</button>
-</div>
-<p v-else-if="!items.length" class="products__empty">No products yet.</p>
-<ul v-else class="products__list">…</ul>
-```
-
-Data shared with other views → the same states, with `items`/`isLoading`/`error` and `load` living in the store (vulkano-frontend-store).
+Read [references/list-view.md](references/list-view.md) when writing a list view.
 
 ## Images / static assets
 
@@ -151,19 +111,9 @@ Never `src="@website/..."`/`src="@admin/..."`, a relative `import`, or any other
 
 ## design system page
 
-Every entrypoint keeps a dev-only design system view — `frontend/<entrypoint>/views/DesignSystem/Index.vue`, route `/design-system` — listing every reusable component with a live usage example and its props/slots. This page is the reuse source of truth: check it before writing a new component or raw form field, so nothing gets reinvented that already exists.
+Every entrypoint keeps a dev-only `views/DesignSystem/Index.vue` (route `/design-system`, `import.meta.env.DEV` only) with one live example + copy-paste snippet per reusable component. Check it before writing a new component; it holds examples only.
 
-Two kinds of components live behind it, both get an entry:
-
-- **Custom components** (Datepicker, Textarea, Select, Modal, Button, etc.) — code lives in `components/<Name>/`.
-- **Vendored UI-library components** (shadcn-vue, Element Plus) — code lives in `components/ui/`.
-
-`components/` (and `components/ui/`) hold the code; `views/DesignSystem/Index.vue` holds nothing but examples — it never re-implements a component, only imports and demonstrates it.
-
-- Ships in the template as the entrypoint's design system page (tokens, typography, spacing, base components, grid); every reusable component adds its own section to it.
-- The route is registered only when `import.meta.env.DEV` (see the entrypoint's `routes.js`) — production builds don't include it.
-- One section per component: name, short description, a rendered live instance, and the exact `<template>` snippet to copy-paste (props included) — mirror that snippet verbatim when reusing, don't improvise a variant.
-- Keep entries flat, one per component — no nested taxonomy needed for this.
+Read [references/design-system-page.md](references/design-system-page.md) when adding or reusing a component.
 
 ## Installed UI library is not optional — check `package.json` before native HTML
 
